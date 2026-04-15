@@ -5,9 +5,15 @@
 
 int main(int argc, char** argv)
 {
+    if (argc != 3) 
+    {
+        std::cerr << "Usage: ircserv <port> <password>" << std::endl;
+        return 1;
+    }
+
 	try
 	{
-		Config config(argc, argv);
+		Config config(argv[1], argv[2]);
 		Server server(config);
 		server.run();
 	}
