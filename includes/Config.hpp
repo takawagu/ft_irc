@@ -10,7 +10,7 @@
 class Config
 {
 	public:
-		Config(int argc, char** argv);
+		Config(const std::string& port_str, const std::string& password);
 		Config(const Config&);
 		Config& operator=(const Config&);
 		~Config();
@@ -24,9 +24,10 @@ class Config
 		int			_port;
 		std::string	_password;
 
-		static int	parsePort(const std::string& str);
-		static bool	isAllDigits(const std::string& str);
-		static void	checkPortRange(long port_num);
+		static int					parsePort(const std::string& str);
+		static bool					isAllDigits(const std::string& str);
+		static void					checkPortRange(long port_num);
+		static const std::string&	validatePassword(const std::string& str);
 };
 
 #endif

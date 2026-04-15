@@ -1,16 +1,6 @@
 #include "Config.hpp"
 
-Config::Config(int argc, char** argv): _port(0), _password()
-{
-	if (argc != 3)
-		throw std::invalid_argument("usage: ircserv <port> <password>");
-
-	_port     = parsePort(argv[1]);
-	_password = argv[2];
-
-	if (_password.empty())
-		throw std::invalid_argument("password must not be empty");
-}
+Config::Config(const std::string& port_str, const std::string& password): _port(parsePort(port_str)), _password(validatePassword(password)){}
 
 Config::~Config() {}
 
@@ -38,16 +28,6 @@ int Config::parsePort(const std::string& str)
 	return static_cast<int>(port_num);
 }
 
-void Config::checkPortRange(long port_num)
-{
-	if (port_num < MIN_PORT || port_num > MAX_PORT)
-	{
-		std::ostringstream oss;
-		oss << "port " << port_num << " is out of range (" << MIN_PORT << "-" << MAX_PORT << ")";
-		throw std::out_of_range(oss.str());
-	}
-}
-
 bool Config::isAllDigits(const std::string& str)
 {
 	if (str.empty())
@@ -59,3 +39,32 @@ bool Config::isAllDigits(const std::string& str)
 	}
 	return true;
 }
+
+void Config::checkPortRange(long port_num)
+{
+	if (port_num < MIN_PORT || port_num > MAX_PORT)
+	{
+		std::ostringstream oss;
+		oss << "port " << port_num << " is out of range (" << MIN_PORT << "-" << MAX_PORT << ")";
+		throw std::out_of_range(oss.str());
+	}
+}
+
+const std::string& Config::validatePassword(const std::string& str)
+{
+	if (str.empty())
+		throw std::invalid_argument("password must not be empty");
+	
+	for (std::string::size_type i = 0; i < str.size(); ++i)
+	{
+		unsigned char c = static_cast<unsigned char>(str[i]);
+		if (c == ' ')
+			throw std::invalid_argument("password must not contain spaces");
+		if (std::iscntrl(c))
+			throw std::invalid_argument("password must not contain control characters");
+	}
+
+	return str;
+}
+
+
