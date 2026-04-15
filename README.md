@@ -34,8 +34,8 @@ scope.
 
 - A C++ compiler supporting the **C++98** standard (`c++` / `clang++` / `g++`).
 - `make`.
-- A real IRC client to be used as a reference during evaluation
-  (e.g. `irssi`, `HexChat`, `WeeChat`, ...).
+- `irssi` — the reference IRC client used during evaluation (see
+  "Connecting with the reference IRC client" below).
 
 ### Build
 
@@ -73,9 +73,20 @@ Then type a command in several parts, using `Ctrl+D` between parts (for
 example `com`, `man`, `d\n`). The server must process the aggregated command
 as a single IRC message.
 
-### Connecting with a reference IRC client
+### Connecting with the reference IRC client
 
-Example with `irssi`:
+The reference client for this project is **[irssi](https://irssi.org/)** — a
+terminal-based IRC client. It is the client used during evaluation, and every
+feature of `ircserv` is verified against it.
+
+Install it with:
+
+```sh
+brew install irssi          # macOS
+sudo apt install irssi      # Debian / Ubuntu
+```
+
+Connect to a running server:
 
 ```sh
 irssi -c 127.0.0.1 -p 6667 -w <password> -n <nickname>
