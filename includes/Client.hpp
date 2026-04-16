@@ -22,6 +22,9 @@ class Client
 		void				appendRecv(const char* data, std::size_t len);
 		bool				extractLine(std::string& out);
 
+		bool				isRegistered() const;
+		void				setRegistered(bool val);
+
 		bool				isRecvBufferFull() const;
 
 		void				queueSend(const std::string& msg);
@@ -34,6 +37,7 @@ class Client
 		std::string	_hostname;
 		std::string	_nickname;
 		std::string	_username;
+		bool		_registered;
 		std::string	_recv_buffer;
 		std::string	_send_buffer;
 

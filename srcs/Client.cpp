@@ -5,6 +5,7 @@ Client::Client(int fd, const std::string& hostname)
 	, _hostname(hostname)
 	, _nickname("*")
 	, _username()
+	, _registered(false)
 	, _recv_buffer()
 	, _send_buffer()
 {
@@ -40,6 +41,16 @@ void Client::setNickname(const std::string& nick)
 void Client::setUsername(const std::string& user)
 {
 	_username = user;
+}
+
+bool Client::isRegistered() const
+{
+	return _registered;
+}
+
+void Client::setRegistered(bool val)
+{
+	_registered = val;
 }
 
 void Client::appendRecv(const char* data, std::size_t len)
