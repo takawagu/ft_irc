@@ -26,9 +26,10 @@ void Server::handleCommand(Client& client, int fd, const std::string& command, c
 	if (it == _cmd_map.end())
 		return;
 
-	// TODO: 未登録クライアントには PASS/NICK/USER/QUIT のみ許可
-	// if (!client.isRegistered() && command != "PASS" && command != "NICK" && command != "USER" && command != "QUIT")
-	//     return;
+	if (!client.isRegistered()
+		&& command != "PASS" && command != "NICK"
+		&& command != "USER" && command != "QUIT")
+		return;
 
 	it->second->execute(*this, client, fd, params);
 }
