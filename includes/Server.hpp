@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+#include <netinet/in.h>
 #include <poll.h>
 #include <signal.h>
 
@@ -38,7 +39,11 @@ class Server
 		std::map<std::string, ACommand*>	_cmd_map;
 
 		void	setup();
+		struct sockaddr_in	createListenAddr() const;
+		void				registerListenPfd();
 		void	loop();
+		void	setupSignals();
+		void	handlePollEvents();
 		void	shutdown();
 
 		void	initCommandMap();
@@ -46,6 +51,7 @@ class Server
 
 		void	acceptNewClient();
 		void	handleClientRead(int fd);
+		void	parseLine(Client& client, int fd, const std::string& line);
 		void	handleClientWrite(int fd);
 		void	deleteCommandMap();
 		void	flushPendingDisconnects();
