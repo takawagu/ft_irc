@@ -7,6 +7,9 @@ void Pass::execute(Server& server, Client& client, int fd, const std::string& pa
 	(void)server;
 	(void)client;
 	(void)fd;
-	(void)params;
+	if (params.empty())
+	{
+		return;
+	}
 	// TODO: implement PASS
 }
