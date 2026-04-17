@@ -5,9 +5,12 @@ Client::Client(int fd, const std::string& hostname)
 	, _hostname(hostname)
 	, _nickname("*")
 	, _username()
+	, _realname()
 	, _registered(false)
+	, _pass_accepted(false)
 	, _recv_buffer()
 	, _send_buffer()
+	, _joined_channels()
 {
 }
 
@@ -41,6 +44,46 @@ void Client::setNickname(const std::string& nick)
 void Client::setUsername(const std::string& user)
 {
 	_username = user;
+}
+
+const std::string& Client::realname() const
+{
+	return _realname;
+}
+
+void Client::setRealname(const std::string& real)
+{
+	_realname = real;
+}
+
+bool Client::isPassAccepted() const
+{
+	return _pass_accepted;
+}
+
+void Client::setPassAccepted(bool val)
+{
+	_pass_accepted = val;
+}
+
+void Client::joinChannel(const std::string& channel)
+{
+	_joined_channels.insert(channel);
+}
+
+void Client::leaveChannel(const std::string& channel)
+{
+	_joined_channels.erase(channel);
+}
+
+bool Client::isOnChannel(const std::string& channel) const
+{
+	return _joined_channels.find(channel) != _joined_channels.end();
+}
+
+const std::set<std::string>& Client::joinedChannels() const
+{
+	return _joined_channels;
 }
 
 bool Client::isRegistered() const
