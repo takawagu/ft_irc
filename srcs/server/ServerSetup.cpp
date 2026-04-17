@@ -4,11 +4,14 @@
 #include <cstring>
 #include <iostream>
 #include <stdexcept>
-
 #include <arpa/inet.h>
 #include <fcntl.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
+
+static int checkSyscall(int ret, const char* name);
+static void registerSignalHandler(void (*handler)(int));
+static void ignoreSigpipe();
 
 void Server::setup()
 {
@@ -22,12 +25,13 @@ void Server::setup()
 	checkSyscall(bind(_listen_fd, reinterpret_cast<struct sockaddr*>(&addr), sizeof(addr)), "bind");
 	checkSyscall(listen(_listen_fd, SOMAXCONN), "listen");
 
-	registerListenPfd();
+	registerPfd(_listen_fd, POLLIN);
+	setupSignals();
 
 	std::cout << "Server listening on port " << _config.port() << std::endl;
 }
 
-int Server::checkSyscall(int ret, const char* name)
+static int checkSyscall(int ret, const char* name)
 {
 	if (ret < 0)
 	{
@@ -47,6 +51,31 @@ struct sockaddr_in Server::createListenAddr() const
 	return addr;
 }
 
+void Server::setupSignals()
+{
+	registerSignalHandler(signalHandler);
+	ignoreSigpipe();
+}
+
+static void registerSignalHandler(void (*handler)(int))
+{
+	struct sigaction sa;
+	sa.sa_handler = handler;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = 0;
+	sigaction(SIGINT, &sa, NULL);
+	sigaction(SIGQUIT, &sa, NULL);
+}
+
+static void ignoreSigpipe()
+{
+	struct sigaction sa;
+	sa.sa_handler = SIG_IGN;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = 0;
+	sigaction(SIGPIPE, &sa, NULL);
+}
+
 void Server::registerPfd(int fd, short events)
 {
 	pollfd pfd;
@@ -54,9 +83,4 @@ void Server::registerPfd(int fd, short events)
 	pfd.events  = events;
 	pfd.revents = 0;
 	_pfds.push_back(pfd);
-}
-
-void Server::registerListenPfd()
-{
-	registerPfd(_listen_fd, POLLIN);
 }

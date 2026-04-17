@@ -38,22 +38,19 @@ class Server
 		std::vector<int>				_disconnect_list;
 		std::map<std::string, ACommand*>	_cmd_map;
 
-		static int	checkSyscall(int ret, const char* name);
-
 		void	setup();
 		struct sockaddr_in	createListenAddr() const;
 		void				registerPfd(int fd, short events);
-		void				registerListenPfd();
+		void				unregisterPfd(int fd);
 		void	loop();
+		void	waitForEvents();
 		void	setupSignals();
 		void	handlePollEvents();
 		void	handleClientEvents(int fd, short revents);
 		bool	isNewConnection(int fd, short revents) const;
-		static bool	isReadable(short revents);
-		static bool	isWritable(short revents);
-		static bool	hasError(short revents);
-		static bool	isDisconnected(short revents);
 		void	shutdown();
+		void	closeAllClients();
+		void	closeListenFd();
 
 		void	initCommandMap();
 		void	handleCommand(Client& client, int fd, const std::string& command, const std::string& params);
@@ -62,8 +59,13 @@ class Server
 		int		acceptConnection(struct sockaddr_in& addr);
 		void	registerClient(int cfd, const struct sockaddr_in& addr);
 		void	handleClientRead(int fd);
-		void	parseLine(Client& client, int fd, const std::string& line);
+		Client*	findClient(int fd);
+		bool	handleRecvResult(ssize_t n, int fd);
+		bool	checkRecvBufferOverflow(Client& client, int fd);
+		void	processClientCommands(Client& client, int fd);
+		bool	parseRequest(const std::string& line, std::string& command, std::string& params);
 		void	handleClientWrite(int fd);
+		bool	handleSendResult(ssize_t n, int fd);
 		void	deleteCommandMap();
 		void	deleteDisconnectedClients();
 		void	removeClient(int fd);
