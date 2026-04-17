@@ -4,40 +4,30 @@
 #include <cstring>
 #include <stdexcept>
 
+static bool isReadable(short revents);
+static bool isWritable(short revents);
+static bool hasError(short revents);
+static bool isDisconnected(short revents);
+
 void Server::loop()
 {
-	setupSignals();
-
 	while (!_stop)
 	{
-		int ready = poll(&_pfds[0], _pfds.size(), -1);
-		if (ready < 0)
-		{
-			int saved_errno = errno;
-			if (saved_errno == EINTR)
-				continue;
-			throw std::runtime_error("poll: " + std::string(std::strerror(saved_errno)));
-		}
-
+		waitForEvents();
 		handlePollEvents();
 		deleteDisconnectedClients();
 	}
 }
 
-void Server::setupSignals()
+void Server::waitForEvents()
 {
-	struct sigaction sa;
-	sa.sa_handler = signalHandler;
-	sigemptyset(&sa.sa_mask);
-	sa.sa_flags = 0;
-	sigaction(SIGINT, &sa, NULL);
-	sigaction(SIGQUIT, &sa, NULL);
-
-	struct sigaction sa_ign;
-	sa_ign.sa_handler = SIG_IGN;
-	sigemptyset(&sa_ign.sa_mask);
-	sa_ign.sa_flags = 0;
-	sigaction(SIGPIPE, &sa_ign, NULL);
+    int ready = -1;
+    while (ready < 0)
+    {
+        ready = poll(&_pfds[0], _pfds.size(), -1);
+        if (ready < 0 && errno != EINTR)
+            throw std::runtime_error("poll: " + std::string(std::strerror(errno)));
+    }
 }
 
 void Server::handlePollEvents()
@@ -75,22 +65,22 @@ bool Server::isNewConnection(int fd, short revents) const
 	return fd == _listen_fd && isReadable(revents);
 }
 
-bool Server::isReadable(short revents)
+static bool isReadable(short revents)
 {
 	return revents & POLLIN;
 }
 
-bool Server::isWritable(short revents)
+static bool isWritable(short revents)
 {
 	return revents & POLLOUT;
 }
 
-bool Server::hasError(short revents)
+static bool hasError(short revents)
 {
 	return revents & (POLLERR | POLLNVAL);
 }
 
-bool Server::isDisconnected(short revents)
+static bool isDisconnected(short revents)
 {
 	return revents & POLLHUP;
 }

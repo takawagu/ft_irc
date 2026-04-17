@@ -3,6 +3,11 @@
 #include "ACommand.hpp"
 #include "Commands.hpp"
 
+#include <iostream>
+
+static std::string extractCommand(const std::string& line, std::string::size_type& pos);
+static std::string extractParams(const std::string& line, std::string::size_type pos);
+
 void Server::initCommandMap()
 {
 	_cmd_map["PASS"]    = new Pass();
@@ -39,4 +44,42 @@ void Server::deleteCommandMap()
 	for (std::map<std::string, ACommand*>::iterator it = _cmd_map.begin(); it != _cmd_map.end(); ++it)
 		delete it->second;
 	_cmd_map.clear();
+}
+
+bool Server::parseRequest(const std::string& line, std::string& command, std::string& params)
+{
+	std::cout << ">> " << line << std::endl;
+
+	std::string::size_type pos = 0;
+	command = extractCommand(line, pos);
+	if (command.empty())
+		return false;
+
+	params = extractParams(line, pos);
+	return true;
+}
+
+static std::string extractCommand(const std::string& line, std::string::size_type& pos)
+{
+	while (pos < line.size() && line[pos] == ' ')
+		++pos;
+	if (pos == line.size())
+		return std::string();
+
+	std::string::size_type cmd_end = line.find(' ', pos);
+	if (cmd_end == std::string::npos)
+		cmd_end = line.size();
+
+	std::string command = line.substr(pos, cmd_end - pos);
+	pos = cmd_end;
+	return command;
+}
+
+static std::string extractParams(const std::string& line, std::string::size_type pos)
+{
+	while (pos < line.size() && line[pos] == ' ')
+		++pos;
+	if (pos >= line.size())
+		return std::string();
+	return line.substr(pos);
 }
