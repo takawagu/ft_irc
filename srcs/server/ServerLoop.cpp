@@ -1,12 +1,8 @@
 #include "Server.hpp"
-#include "Client.hpp"
 
 #include <cerrno>
 #include <cstring>
-#include <iostream>
 #include <stdexcept>
-
-#include <sys/socket.h>
 
 void Server::loop()
 {
@@ -24,7 +20,7 @@ void Server::loop()
 		}
 
 		handlePollEvents();
-		flushPendingDisconnects();
+		deleteDisconnectedClients();
 	}
 }
 
@@ -48,119 +44,53 @@ void Server::handlePollEvents()
 {
 	for (std::size_t i = 0; i < _pfds.size(); ++i)
 	{
-		short re = _pfds[i].revents;
-		if (re == 0)
-			continue;
+		short revents = _pfds[i].revents;
 
-		int fd = _pfds[i].fd;
-
-		if (fd == _listen_fd)
+		if (revents)
 		{
-			if (re & POLLIN)
+			int fd = _pfds[i].fd;
+
+			if (isNewConnection(fd, revents))
 				acceptNewClient();
-			continue;
+			else if (hasError(revents))
+				addToDisconnectList(fd);
+			else
+				handleClientEvents(fd, revents);
 		}
-
-		if (re & (POLLERR | POLLNVAL))
-		{
-			disconnectClient(fd);
-			continue;
-		}
-		if (re & POLLIN)
-			handleClientRead(fd);
-		if (re & POLLOUT)
-			handleClientWrite(fd);
-		if (re & POLLHUP)
-			disconnectClient(fd);
 	}
 }
 
-void Server::handleClientRead(int fd)
+void Server::handleClientEvents(int fd, short revents)
 {
-	std::map<int, Client*>::iterator it = _clients.find(fd);
-	if (it == _clients.end())
-		return;
-
-	Client& client = *it->second;
-	char buf[4096];
-	ssize_t n = recv(fd, buf, sizeof(buf), 0);
-
-	if (n < 0)
-	{
-		if (errno == EAGAIN || errno == EWOULDBLOCK)
-			return;
-		disconnectClient(fd);
-		return;
-	}
-	if (n == 0)
-	{
-		disconnectClient(fd);
-		return;
-	}
-
-	client.appendRecv(buf, static_cast<std::size_t>(n));
-
-	if (client.isRecvBufferFull())
-	{
-		disconnectClient(fd);
-		return;
-	}
-
-	std::string line;
-	while (client.extractLine(line))
-		parseLine(client, fd, line);
+	if (isReadable(revents))
+		handleClientRead(fd);
+	if (isWritable(revents))
+		handleClientWrite(fd);
+	if (isDisconnected(revents))
+		addToDisconnectList(fd);
 }
 
-void Server::parseLine(Client& client, int fd, const std::string& line)
+bool Server::isNewConnection(int fd, short revents) const
 {
-	std::cout << "fd " << fd << " >> " << line << std::endl;
-
-	std::string::size_type pos = 0;
-	while (pos < line.size() && line[pos] == ' ')
-		++pos;
-	if (pos == line.size())
-		return;
-
-	std::string::size_type cmd_end = line.find(' ', pos);
-	if (cmd_end == std::string::npos)
-		cmd_end = line.size();
-
-	std::string command = line.substr(pos, cmd_end - pos);
-
-	std::string::size_type arg_pos = cmd_end;
-	while (arg_pos < line.size() && line[arg_pos] == ' ')
-		++arg_pos;
-
-	std::string params = (arg_pos < line.size()) ? line.substr(arg_pos) : std::string();
-
-	handleCommand(client, fd, command, params);
+	return fd == _listen_fd && isReadable(revents);
 }
 
-void Server::handleClientWrite(int fd)
+bool Server::isReadable(short revents)
 {
-	std::map<int, Client*>::iterator it = _clients.find(fd);
-	if (it == _clients.end())
-		return;
+	return revents & POLLIN;
+}
 
-	Client& client = *it->second;
-	if (!client.hasPendingSend())
-	{
-		setPollout(fd, false);
-		return;
-	}
+bool Server::isWritable(short revents)
+{
+	return revents & POLLOUT;
+}
 
-	ssize_t n = send(fd, client.sendBuffer().data(), client.sendBuffer().size(), 0);
-	if (n < 0)
-	{
-		if (errno == EAGAIN || errno == EWOULDBLOCK)
-			return;
-		disconnectClient(fd);
-		return;
-	}
-	if (n == 0)
-		return;
+bool Server::hasError(short revents)
+{
+	return revents & (POLLERR | POLLNVAL);
+}
 
-	client.eraseSent(static_cast<std::size_t>(n));
-	if (!client.hasPendingSend())
-		setPollout(fd, false);
+bool Server::isDisconnected(short revents)
+{
+	return revents & POLLHUP;
 }

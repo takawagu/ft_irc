@@ -12,43 +12,29 @@
 
 void Server::setup()
 {
-	_listen_fd = socket(AF_INET, SOCK_STREAM, 0);
-	if (_listen_fd < 0)
-	{
-		int saved_errno = errno;
-		throw std::runtime_error("socket: " + std::string(std::strerror(saved_errno)));
-	}
+	_listen_fd = checkSyscall(socket(AF_INET, SOCK_STREAM, 0), "socket");
 
 	int opt = 1;
-	if (setsockopt(_listen_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
-	{
-		int saved_errno = errno;
-		throw std::runtime_error("setsockopt: " + std::string(std::strerror(saved_errno)));
-	}
-
-	if (fcntl(_listen_fd, F_SETFL, O_NONBLOCK) < 0)
-	{
-		int saved_errno = errno;
-		throw std::runtime_error("fcntl: " + std::string(std::strerror(saved_errno)));
-	}
+	checkSyscall(setsockopt(_listen_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)), "setsockopt");
+	checkSyscall(fcntl(_listen_fd, F_SETFL, O_NONBLOCK), "fcntl");
 
 	struct sockaddr_in addr = createListenAddr();
-
-	if (bind(_listen_fd, reinterpret_cast<struct sockaddr*>(&addr), sizeof(addr)) < 0)
-	{
-		int saved_errno = errno;
-		throw std::runtime_error("bind: " + std::string(std::strerror(saved_errno)));
-	}
-
-	if (listen(_listen_fd, SOMAXCONN) < 0)
-	{
-		int saved_errno = errno;
-		throw std::runtime_error("listen: " + std::string(std::strerror(saved_errno)));
-	}
+	checkSyscall(bind(_listen_fd, reinterpret_cast<struct sockaddr*>(&addr), sizeof(addr)), "bind");
+	checkSyscall(listen(_listen_fd, SOMAXCONN), "listen");
 
 	registerListenPfd();
 
 	std::cout << "Server listening on port " << _config.port() << std::endl;
+}
+
+int Server::checkSyscall(int ret, const char* name)
+{
+	if (ret < 0)
+	{
+		int saved_errno = errno;
+		throw std::runtime_error(std::string(name) + ": " + std::strerror(saved_errno));
+	}
+	return ret;
 }
 
 struct sockaddr_in Server::createListenAddr() const
@@ -61,11 +47,16 @@ struct sockaddr_in Server::createListenAddr() const
 	return addr;
 }
 
+void Server::registerPfd(int fd, short events)
+{
+	pollfd pfd;
+	pfd.fd      = fd;
+	pfd.events  = events;
+	pfd.revents = 0;
+	_pfds.push_back(pfd);
+}
+
 void Server::registerListenPfd()
 {
-	pollfd listen_pfd;
-	listen_pfd.fd      = _listen_fd;
-	listen_pfd.events  = POLLIN;
-	listen_pfd.revents = 0;
-	_pfds.push_back(listen_pfd);
+	registerPfd(_listen_fd, POLLIN);
 }
