@@ -5,7 +5,9 @@
 #include <sys/socket.h>
 
 static ssize_t sendToClient(Client& client);
-static void flushSentData(Client& client, std::size_t n);
+static void removeSentData(Client& client, std::size_t n);
+
+
 
 void Server::handleClientWrite(int fd)
 {
@@ -13,31 +15,35 @@ void Server::handleClientWrite(int fd)
 	if (!client)
 		return;
 
-	if (!client->hasPendingSend())
+	if (!client->hasDataToSend())
 	{
 		setPollout(fd, false);
 		return;
 	}
 
-	ssize_t n = sendToClient(*client);
-	if (!handleSendResult(n, fd))
+	ssize_t bytesSent = sendToClient(*client);
+	if (!isSendSuccessful(bytesSent, fd))
 		return;
 
-	flushSentData(*client, static_cast<std::size_t>(n));
-	if (!client->hasPendingSend())
+	removeSentData(*client, static_cast<std::size_t>(bytesSent));
+
+	if (!client->hasDataToSend())
 		setPollout(fd, false);
 }
 
-bool Server::handleSendResult(ssize_t n, int fd)
+bool Server::isSendSuccessful(ssize_t bytesSent, int fd)
 {
-	if (n < 0)
+	bool sendError   = (bytesSent < 0);
+	bool nothingSent = (bytesSent == 0);
+	bool unrecoverableError = (errno != EAGAIN && errno != EWOULDBLOCK);
+
+	if (sendError)
 	{
-		if (errno == EAGAIN || errno == EWOULDBLOCK)
-			return false;
-		addToDisconnectList(fd);
+		if (unrecoverableError)
+			addToDisconnectList(fd);
 		return false;
 	}
-	if (n == 0)
+	if (nothingSent)
 		return false;
 	return true;
 }
@@ -47,7 +53,7 @@ static ssize_t sendToClient(Client& client)
 	return send(client.fd(), client.sendBuffer().data(), client.sendBuffer().size(), 0);
 }
 
-static void flushSentData(Client& client, std::size_t n)
+static void removeSentData(Client& client, std::size_t n)
 {
 	client.eraseSent(n);
 }

@@ -135,7 +135,7 @@ void Client::eraseSent(std::size_t n)
 	_send_buffer.erase(0, n);
 }
 
-bool Client::hasPendingSend() const
+bool Client::hasDataToSend() const
 {
 	return !_send_buffer.empty();
 }

@@ -9,6 +9,8 @@ static const std::size_t RECV_BUF_SIZE = 4096;
 static ssize_t recvFromClient(int fd, char* buf, std::size_t bufSize);
 static void appendToRecvBuffer(Client& client, const char* buf, std::size_t n);
 
+
+
 void Server::handleClientRead(int fd)
 {
 	Client* client = findClient(fd);
@@ -16,27 +18,30 @@ void Server::handleClientRead(int fd)
 		return;
 
 	char buf[RECV_BUF_SIZE];
-	ssize_t n = recvFromClient(fd, buf, sizeof(buf));
-	if (!handleRecvResult(n, fd))
+	ssize_t bytesReceived = recvFromClient(fd, buf, sizeof(buf));
+	if (!isRecvSuccessful(bytesReceived, fd))
 		return;
 
-	appendToRecvBuffer(*client, buf, static_cast<std::size_t>(n));
-	if (checkRecvBufferOverflow(*client, fd))
+	appendToRecvBuffer(*client, buf, static_cast<std::size_t>(bytesReceived));
+	if (!isRecvBufferAvailable(*client, fd))
 		return;
 
-	processClientCommands(*client, fd);
+	processClientRequests(*client, fd);
 }
 
-bool Server::handleRecvResult(ssize_t n, int fd)
+bool Server::isRecvSuccessful(ssize_t bytesReceived, int fd)
 {
-	if (n < 0)
+	bool recvError        = (bytesReceived < 0);
+	bool connectionClosed = (bytesReceived == 0);
+	bool unrecoverableError = (errno != EAGAIN && errno != EWOULDBLOCK);
+
+	if (recvError)
 	{
-		if (errno == EAGAIN || errno == EWOULDBLOCK)
-			return false;
-		addToDisconnectList(fd);
+		if (unrecoverableError)
+			addToDisconnectList(fd);
 		return false;
 	}
-	if (n == 0)
+	if (connectionClosed)
 	{
 		addToDisconnectList(fd);
 		return false;
@@ -44,17 +49,17 @@ bool Server::handleRecvResult(ssize_t n, int fd)
 	return true;
 }
 
-bool Server::checkRecvBufferOverflow(Client& client, int fd)
+bool Server::isRecvBufferAvailable(Client& client, int fd)
 {
 	if (client.isRecvBufferFull())
 	{
 		addToDisconnectList(fd);
-		return true;
+		return false;
 	}
-	return false;
+	return true;
 }
 
-void Server::processClientCommands(Client& client, int fd)
+void Server::processClientRequests(Client& client, int fd)
 {
 	std::string line;
 	while (client.extractLine(line))
