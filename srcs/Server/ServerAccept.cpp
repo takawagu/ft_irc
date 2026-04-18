@@ -38,11 +38,14 @@ int Server::acceptConnection(struct sockaddr_in& addr)
 
 bool Server::isAcceptSuccessful(int client_fd)
 {
+	bool unrecoverableError = (errno != EAGAIN && errno != EWOULDBLOCK);
+
 	if (client_fd >= 0)
 		return true;
-	bool unrecoverableError = (errno != EAGAIN && errno != EWOULDBLOCK);
+
 	if (unrecoverableError)
 		std::cerr << "accept: " << std::strerror(errno) << std::endl;
+
 	return false;
 }
 

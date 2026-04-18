@@ -1,13 +1,22 @@
 #include "Server.hpp"
 #include "Client.hpp"
 #include "ACommand.hpp"
+#include "Channel.hpp"
 
 #include <iostream>
 #include <unistd.h>
 
+void Server::closeAllChannels()
+{
+	for (std::map<std::string, Channel*>::iterator it = _channels.begin(); it != _channels.end(); ++it)
+		delete it->second;
+	_channels.clear();
+}
+
 void Server::shutdown()
 {
 	deleteCommandMap();
+	closeAllChannels();
 	closeAllClients();
 	closeListenFd();
 

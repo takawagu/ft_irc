@@ -13,6 +13,7 @@
 
 class Client;
 class ACommand;
+class Channel;
 
 class Server
 {
@@ -27,6 +28,12 @@ class Server
 		void	addToDisconnectList(int fd);
 		void	setPollout(int fd, bool enable);
 
+		Channel*	findChannel(const std::string& name) const;
+		Channel*	getOrCreateChannel(const std::string& name);
+		void		deleteChannelIfEmpty(const std::string& name);
+		void		broadcastToChannel(Channel* channel, const std::string& msg, Client* exclude = NULL);
+		Client*		findClientByNick(const std::string& nick) const;
+
 	private:
 		static volatile sig_atomic_t	_stop;
 		static void						signalHandler(int sig);
@@ -37,6 +44,7 @@ class Server
 		std::map<int, Client*>			_clients;
 		std::vector<int>				_disconnect_list;
 		std::map<std::string, ACommand*>	_cmd_map;
+		std::map<std::string, Channel*>		_channels;
 
 		void	setup();
 		struct sockaddr_in	createListenAddr() const;
@@ -49,6 +57,7 @@ class Server
 		void	handleClientEvents(int fd, short revents);
 		bool	isNewConnection(int fd, short revents) const;
 		void	shutdown();
+		void	closeAllChannels();
 		void	closeAllClients();
 		void	closeListenFd();
 
