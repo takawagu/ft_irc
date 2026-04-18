@@ -5,8 +5,14 @@
 
 #include <iostream>
 
+static bool isAllowedBeforeRegistration(const std::string& command);
 static std::string extractCommand(const std::string& line, std::string::size_type& pos);
 static std::string extractParams(const std::string& line, std::string::size_type pos);
+static void skipSpaces(const std::string& line, std::string::size_type& pos);
+static std::string::size_type findCmdEnd(const std::string& line, std::string::size_type pos);
+
+
+
 
 void Server::initCommandMap()
 {
@@ -27,16 +33,28 @@ void Server::initCommandMap()
 
 void Server::handleCommand(Client& client, int fd, const std::string& command, const std::string& params)
 {
-	std::map<std::string, ACommand*>::iterator it = _cmd_map.find(command);
+	ACommand* cmd = findInCmdMap(command);
+	if (cmd == NULL)
+		return;
+
+	if (!client.isRegistered() && !isAllowedBeforeRegistration(command))
+		return;
+
+	cmd->execute(*this, client, fd, params);
+}
+
+ACommand* Server::findInCmdMap(const std::string& command) const
+{
+	std::map<std::string, ACommand*>::const_iterator it = _cmd_map.find(command);
 	if (it == _cmd_map.end())
-		return;
+		return NULL;
+	return it->second;
+}
 
-	if (!client.isRegistered()
-		&& command != "PASS" && command != "NICK"
-		&& command != "USER" && command != "QUIT")
-		return;
-
-	it->second->execute(*this, client, fd, params);
+static bool isAllowedBeforeRegistration(const std::string& command)
+{
+	return command == "PASS" || command == "NICK"
+		|| command == "USER" || command == "QUIT";
 }
 
 void Server::deleteCommandMap()
@@ -61,25 +79,33 @@ bool Server::parseRequest(const std::string& line, std::string& command, std::st
 
 static std::string extractCommand(const std::string& line, std::string::size_type& pos)
 {
-	while (pos < line.size() && line[pos] == ' ')
-		++pos;
+	skipSpaces(line, pos);
 	if (pos == line.size())
 		return std::string();
 
-	std::string::size_type cmd_end = line.find(' ', pos);
-	if (cmd_end == std::string::npos)
-		cmd_end = line.size();
-
+	std::string::size_type cmd_end = findCmdEnd(line, pos);
 	std::string command = line.substr(pos, cmd_end - pos);
 	pos = cmd_end;
 	return command;
 }
 
+static std::string::size_type findCmdEnd(const std::string& line, std::string::size_type pos)
+{
+	std::string::size_type end = line.find(' ', pos);
+	if (end == std::string::npos)
+		return line.size();
+	return end;
+}
+
 static std::string extractParams(const std::string& line, std::string::size_type pos)
+{
+	skipSpaces(line, pos);
+	return line.substr(pos);
+}
+
+
+static void skipSpaces(const std::string& line, std::string::size_type& pos)
 {
 	while (pos < line.size() && line[pos] == ' ')
 		++pos;
-	if (pos >= line.size())
-		return std::string();
-	return line.substr(pos);
 }

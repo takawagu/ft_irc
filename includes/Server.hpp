@@ -52,20 +52,23 @@ class Server
 		void	closeAllClients();
 		void	closeListenFd();
 
-		void	initCommandMap();
-		void	handleCommand(Client& client, int fd, const std::string& command, const std::string& params);
+		void		initCommandMap();
+		ACommand*	findInCmdMap(const std::string& command) const;
+		void		handleCommand(Client& client, int fd, const std::string& command, const std::string& params);
 
 		void	acceptNewClient();
 		int		acceptConnection(struct sockaddr_in& addr);
-		void	registerClient(int cfd, const struct sockaddr_in& addr);
+		bool	isAcceptSuccessful(int client_fd);
+		bool	setNonBlocking(int fd);
+		void	registerClient(int client_fd, const struct sockaddr_in& addr);
 		void	handleClientRead(int fd);
 		Client*	findClient(int fd);
-		bool	handleRecvResult(ssize_t n, int fd);
-		bool	checkRecvBufferOverflow(Client& client, int fd);
-		void	processClientCommands(Client& client, int fd);
+		bool	isRecvSuccessful(ssize_t bytesReceived, int fd);
+		bool	isRecvBufferAvailable(Client& client, int fd);
+		void	processClientRequests(Client& client, int fd);
 		bool	parseRequest(const std::string& line, std::string& command, std::string& params);
 		void	handleClientWrite(int fd);
-		bool	handleSendResult(ssize_t n, int fd);
+		bool	isSendSuccessful(ssize_t bytesSent, int fd);
 		void	deleteCommandMap();
 		void	deleteDisconnectedClients();
 		void	removeClient(int fd);

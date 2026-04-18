@@ -41,7 +41,7 @@ class Client
 		void				queueSend(const std::string& msg);
 		const std::string&	sendBuffer() const;
 		void				eraseSent(std::size_t n);
-		bool				hasPendingSend() const;
+		bool				hasDataToSend() const;
 
 	private:
 		int			_fd;

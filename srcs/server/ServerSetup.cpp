@@ -13,6 +13,8 @@ static int checkSyscall(int ret, const char* name);
 static void registerSignalHandler(void (*handler)(int));
 static void ignoreSigpipe();
 
+
+
 void Server::setup()
 {
 	_listen_fd = checkSyscall(socket(AF_INET, SOCK_STREAM, 0), "socket");
