@@ -26,7 +26,8 @@ class Config
 
 		static int					parsePort(const std::string& str);
 		static bool					isAllDigits(const std::string& str);
-		static void					checkPortRange(long port_num);
+		static bool					hasTooManyDigits(const std::string& str);
+static void					checkPortRange(long port_num);
 		static const std::string&	validatePassword(const std::string& str);
 };
 
