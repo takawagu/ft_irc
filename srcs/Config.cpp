@@ -20,10 +20,9 @@ int Config::parsePort(const std::string& str)
 		throw std::invalid_argument("port must not be empty");
 	if (!isAllDigits(str))
 		throw std::invalid_argument("port \"" + str + "\" must contain only digits");
-	char* end = 0;
-	long port_num = std::strtol(str.c_str(), &end, BASE_10);
-	if (end == str.c_str() || *end != '\0')
-		throw std::invalid_argument("port \"" + str + "\" is not a valid integer");
+	if (hasTooManyDigits(str))
+		throw std::invalid_argument("port \"" + str + "\" is out of range (1-65535)");
+	long port_num = std::strtol(str.c_str(), NULL, BASE_10);
 	checkPortRange(port_num);
 	return static_cast<int>(port_num);
 }
@@ -40,6 +39,11 @@ bool Config::isAllDigits(const std::string& str)
 	return true;
 }
 
+bool Config::hasTooManyDigits(const std::string& str)
+{
+	return str.size() > 5;
+}
+
 void Config::checkPortRange(long port_num)
 {
 	if (port_num < MIN_PORT || port_num > MAX_PORT)
@@ -54,7 +58,7 @@ const std::string& Config::validatePassword(const std::string& str)
 {
 	if (str.empty())
 		throw std::invalid_argument("password must not be empty");
-	
+
 	for (std::string::size_type i = 0; i < str.size(); ++i)
 	{
 		unsigned char c = static_cast<unsigned char>(str[i]);
