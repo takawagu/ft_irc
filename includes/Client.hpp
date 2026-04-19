@@ -2,6 +2,7 @@
 #define CLIENT_HPP
 
 #include <string>
+#include <set>
 
 class Client
 {
@@ -15,27 +16,44 @@ class Client
 		const std::string&	hostname() const;
 		const std::string&	nickname() const;
 		const std::string&	username() const;
+		const std::string&	realname() const;
 
 		void				setNickname(const std::string& nick);
 		void				setUsername(const std::string& user);
+		void				setRealname(const std::string& real);
 
-		void				appendRecv(const char* data, std::size_t len);
+		bool				isPassAccepted() const;
+		void				setPassAccepted(bool val);
+
+		void				joinChannel(const std::string& channel);
+		void				leaveChannel(const std::string& channel);
+		bool				isOnChannel(const std::string& channel) const;
+		const std::set<std::string>&	joinedChannels() const;
+
+		void				appendToRecvBuffer(const char* data, std::size_t len);
 		bool				extractLine(std::string& out);
+
+		bool				isRegistered() const;
+		void				setRegistered(bool val);
 
 		bool				isRecvBufferFull() const;
 
-		void				queueSend(const std::string& msg);
+		void				appendToSendBuffer(const std::string& msg);
 		const std::string&	sendBuffer() const;
-		void				eraseSent(std::size_t n);
-		bool				hasPendingSend() const;
+		void				removeSentData(std::size_t n);
+		bool				hasDataToSend() const;
 
 	private:
 		int			_fd;
 		std::string	_hostname;
 		std::string	_nickname;
 		std::string	_username;
+		std::string	_realname;
+		bool		_registered;
+		bool		_pass_accepted;
 		std::string	_recv_buffer;
 		std::string	_send_buffer;
+		std::set<std::string>	_joined_channels;
 
 		enum { MAX_RECV_BUFFER = 4096 * 4 };
 };
