@@ -10,7 +10,6 @@ static bool hasError(short revents);
 static bool isDisconnected(short revents);
 
 
-
 void Server::loop()
 {
 	while (!_stop)

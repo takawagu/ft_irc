@@ -5,10 +5,7 @@
 #include <sys/socket.h>
 
 static const std::size_t RECV_BUF_SIZE = 4096;
-
-static ssize_t recvFromClient(int fd, char* buf, std::size_t bufSize);
-static void appendToRecvBuffer(Client& client, const char* buf, std::size_t n);
-
+static int FLAGS_NONE = 0;
 
 
 void Server::handleClientRead(int fd)
@@ -18,11 +15,11 @@ void Server::handleClientRead(int fd)
 		return;
 
 	char buf[RECV_BUF_SIZE];
-	ssize_t bytesReceived = recvFromClient(fd, buf, sizeof(buf));
+	ssize_t bytesReceived = recv(fd, buf, sizeof(buf), FLAGS_NONE);
 	if (!isRecvSuccessful(bytesReceived, fd))
 		return;
 
-	appendToRecvBuffer(*client, buf, static_cast<std::size_t>(bytesReceived));
+	client->appendToRecvBuffer(buf, static_cast<std::size_t>(bytesReceived));
 	if (!isRecvBufferAvailable(*client, fd))
 		return;
 
@@ -33,10 +30,10 @@ bool Server::isRecvSuccessful(ssize_t bytesReceived, int fd)
 {
 	bool recvError        = (bytesReceived < 0);
 	bool connectionClosed = (bytesReceived == 0);
-	bool unrecoverableError = (errno != EAGAIN && errno != EWOULDBLOCK);
 
 	if (recvError)
 	{
+		bool unrecoverableError = (errno != EAGAIN && errno != EWOULDBLOCK);
 		if (unrecoverableError)
 			addToDisconnectList(fd);
 		return false;
@@ -69,14 +66,4 @@ void Server::processClientRequests(Client& client, int fd)
 		if (parseRequest(line, command, params))
 			handleCommand(client, fd, command, params);
 	}
-}
-
-static ssize_t recvFromClient(int fd, char* buf, std::size_t bufSize)
-{
-	return recv(fd, buf, bufSize, 0);
-}
-
-static void appendToRecvBuffer(Client& client, const char* buf, std::size_t n)
-{
-	client.appendRecv(buf, n);
 }

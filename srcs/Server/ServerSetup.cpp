@@ -14,7 +14,6 @@ static void registerSignalHandler(void (*handler)(int));
 static void ignoreSigpipe();
 
 
-
 void Server::setup()
 {
 	_listen_fd = checkSyscall(socket(AF_INET, SOCK_STREAM, 0), "socket");
@@ -62,9 +61,8 @@ void Server::setupSignals()
 static void registerSignalHandler(void (*handler)(int))
 {
 	struct sigaction sa;
+	std::memset(&sa, 0, sizeof(sa));
 	sa.sa_handler = handler;
-	sigemptyset(&sa.sa_mask);
-	sa.sa_flags = 0;
 	sigaction(SIGINT, &sa, NULL);
 	sigaction(SIGQUIT, &sa, NULL);
 }
@@ -72,9 +70,8 @@ static void registerSignalHandler(void (*handler)(int))
 static void ignoreSigpipe()
 {
 	struct sigaction sa;
+	std::memset(&sa, 0, sizeof(sa));
 	sa.sa_handler = SIG_IGN;
-	sigemptyset(&sa.sa_mask);
-	sa.sa_flags = 0;
 	sigaction(SIGPIPE, &sa, NULL);
 }
 

@@ -30,7 +30,7 @@ class Client
 		bool				isOnChannel(const std::string& channel) const;
 		const std::set<std::string>&	joinedChannels() const;
 
-		void				appendRecv(const char* data, std::size_t len);
+		void				appendToRecvBuffer(const char* data, std::size_t len);
 		bool				extractLine(std::string& out);
 
 		bool				isRegistered() const;
@@ -38,9 +38,9 @@ class Client
 
 		bool				isRecvBufferFull() const;
 
-		void				queueSend(const std::string& msg);
+		void				appendToSendBuffer(const std::string& msg);
 		const std::string&	sendBuffer() const;
-		void				eraseSent(std::size_t n);
+		void				removeSentData(std::size_t n);
 		bool				hasDataToSend() const;
 
 	private:

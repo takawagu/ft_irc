@@ -46,6 +46,6 @@ void Channel::broadcast(const std::string& msg, Client* exclude)
 	for (std::map<Client*, bool>::iterator it = _members.begin(); it != _members.end(); ++it)
 	{
 		if (it->first != exclude)
-			it->first->queueSend(msg);
+			it->first->appendToSendBuffer(msg);
 	}
 }
