@@ -41,7 +41,7 @@ void Server::broadcastToChannel(Channel* channel, const std::string& msg, Client
 	{
 		if (it->first != exclude)
 		{
-			it->first->queueSend(msg);
+			it->first->appendToSendBuffer(msg);
 			setPollout(it->first->fd(), true);
 		}
 	}

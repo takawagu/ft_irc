@@ -96,7 +96,7 @@ void Client::setRegistered(bool val)
 	_registered = val;
 }
 
-void Client::appendRecv(const char* data, std::size_t len)
+void Client::appendToRecvBuffer(const char* data, std::size_t len)
 {
 	_recv_buffer.append(data, len);
 }
@@ -120,7 +120,7 @@ bool Client::isRecvBufferFull() const
 	return _recv_buffer.size() > MAX_RECV_BUFFER;
 }
 
-void Client::queueSend(const std::string& msg)
+void Client::appendToSendBuffer(const std::string& msg)
 {
 	_send_buffer += msg;
 }
@@ -130,7 +130,7 @@ const std::string& Client::sendBuffer() const
 	return _send_buffer;
 }
 
-void Client::eraseSent(std::size_t n)
+void Client::removeSentData(std::size_t n)
 {
 	_send_buffer.erase(0, n);
 }

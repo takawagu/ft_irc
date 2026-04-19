@@ -61,8 +61,7 @@ bool Server::setNonBlocking(int fd)
 
 void Server::registerClient(int client_fd, const struct sockaddr_in& addr)
 {
-	char ip[INET_ADDRSTRLEN];
-	inet_ntop(AF_INET, &addr.sin_addr, ip, sizeof(ip));
+	const char* ip = inet_ntoa(addr.sin_addr);
 
 	_clients[client_fd] = new Client(client_fd, ip);
 	registerPfd(client_fd, POLLIN);

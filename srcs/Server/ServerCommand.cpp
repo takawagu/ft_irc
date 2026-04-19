@@ -12,8 +12,6 @@ static void skipSpaces(const std::string& line, std::string::size_type& pos);
 static std::string::size_type findCmdEnd(const std::string& line, std::string::size_type pos);
 
 
-
-
 void Server::initCommandMap()
 {
 	_cmd_map["PASS"]    = new Pass();
