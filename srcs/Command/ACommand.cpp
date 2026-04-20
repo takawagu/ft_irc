@@ -5,6 +5,7 @@ void ACommand::execute(Server& server, Client& client, int fd, const std::string
     setParams(params);
     executeAction(server, client, fd);
 }
+
 void ACommand::setParams(const std::string& params)
 {
 	_params.clear();
@@ -23,7 +24,9 @@ const std::vector<std::string>& ACommand::params() const
 std::string ACommand::trimEnd(const std::string& str)
 {
 	std::string trimmed = str;
-	while (!trimmed.empty() && (trimmed.back() == '\r' || trimmed.back() == '\n'))
+	if (!trimmed.empty() && trimmed.back() ==  '\n')		
+		trimmed.pop_back();
+	if (!trimmed.empty() && trimmed.back() ==  '\r')		
 		trimmed.pop_back();
 	return trimmed;
 }
