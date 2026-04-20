@@ -9,7 +9,7 @@ void Pass::executeAction(Server& server, Client& client, int fd)
 
 	if (params().size() <= 1)
 	{
-		std::string error_msg = ":" + client.hostname() + " 461 " + client.nickname() + " PASS :Not enough parameters\r\n";
+		std::string error_msg = "461 ERR_NEEDMOREPARAMS PASS :Not enough parameters\r\n";
 		client.appendToSendBuffer(error_msg);
 		return;
 	}
@@ -20,7 +20,7 @@ void Pass::executeAction(Server& server, Client& client, int fd)
 	}
 	else
 	{
-		std::string error_msg = ":" + client.hostname() + " 464 " + client.nickname() + " :Password incorrect\r\n";
+		std::string error_msg = "464 ERR_PASSWDMISMATCH :Password incorrect\r\n";
 		client.appendToSendBuffer(error_msg);
 	}
 	return;
