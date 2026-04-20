@@ -34,6 +34,7 @@ class Server
 		void		broadcastToChannel(Channel* channel, const std::string& msg, Client* exclude = NULL);
 		Client*		findClientByNick(const std::string& nick) const;
 
+		bool checkPassword(const std::string& pass) const;
 	private:
 		static volatile sig_atomic_t	_stop;
 		static void						signalHandler(int sig);
