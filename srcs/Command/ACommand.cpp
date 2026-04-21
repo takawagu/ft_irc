@@ -1,4 +1,5 @@
 #include "ACommand.hpp"
+#include <iostream>
 
 void ACommand::execute(Server& server, Client& client, int fd, const std::string& params)
 {
@@ -9,24 +10,17 @@ void ACommand::execute(Server& server, Client& client, int fd, const std::string
 void ACommand::setParams(const std::string& params)
 {
 	_params.clear();
-	std::string trimmed = trimEnd(params);
-	std::istringstream ss(trimmed);
+	std::istringstream ss(params);
 	std::string token;
 	while (ss >> token)
 		_params.push_back(token);
+
+	//デバッグ出力用テスト
+	for (size_t i = 0; i < _params.size(); ++i)
+		std::cout << "params[" << i << "]=\"" << _params[i] << "\"" << std::endl;
 }
 
 const std::vector<std::string>& ACommand::params() const
 {
 	return _params;
-}
-
-std::string ACommand::trimEnd(const std::string& str)
-{
-	std::string trimmed = str;
-	if (!trimmed.empty() && trimmed.back() ==  '\n')		
-		trimmed.pop_back();
-	if (!trimmed.empty() && trimmed.back() ==  '\r')		
-		trimmed.pop_back();
-	return trimmed;
 }
