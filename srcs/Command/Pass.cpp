@@ -1,23 +1,23 @@
 #include "Pass.hpp"
 #include "Server.hpp"
 #include "Client.hpp"
-#include <iostream>
 
 void Pass::executeAction(Server& server, Client& client, int fd)
 {
-	if (params().size() <= 1)
+	if (client.isRegistered())
+	{
+		server.sendError(client, fd, "462", " :You may not reregister");
+		return;
+	}
+	if (params().size() < 2)
 	{
 		server.sendError(client, fd, "461", "PASS :Not enough parameters");
 		return;
 	}
-	if (server.checkPassword(params()[1]))
-	{
-		client.setRegistered(true);
-		std::cout << "success " << std::endl;
-	}
-	else
+	if (!server.checkPassword(params()[1]))
 	{
 		server.sendError(client, fd, "464", " :Password incorrect");
+		return;
 	}
-	return;
+	client.setPassAccepted();
 }
