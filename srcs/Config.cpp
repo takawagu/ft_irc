@@ -29,7 +29,7 @@ void Config::validatePortStr(const std::string& str)
 	if (!isAllDigits(str))
 		throw std::invalid_argument("port \"" + str + "\" must contain only digits");
 	if (hasTooManyDigits(str))
-		throw std::invalid_argument("port \"" + str + "\" is out of range (1-65535)");
+		throw std::invalid_argument("port \"" + str + "\" is out of range (1024-65535)");
 }
 
 bool Config::isAllDigits(const std::string& str)
