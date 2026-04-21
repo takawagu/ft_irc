@@ -66,6 +66,12 @@ void Client::setPassAccepted(bool val)
 	_pass_accepted = val;
 }
 
+void Client::tryRegister()
+{
+	if (_pass_accepted && _nickname != "*" && !_username.empty())
+		_registered = true;
+}
+
 void Client::joinChannel(const std::string& channel)
 {
 	_joined_channels.insert(channel);

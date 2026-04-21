@@ -24,6 +24,7 @@ class Client
 
 		bool				isPassAccepted() const;
 		void				setPassAccepted(bool val);
+		void				tryRegister();
 
 		void				joinChannel(const std::string& channel);
 		void				leaveChannel(const std::string& channel);
