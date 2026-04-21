@@ -23,7 +23,7 @@ class Client
 		void				setRealname(const std::string& real);
 
 		bool				isPassAccepted() const;
-		void				setPassAccepted(bool val);
+		void				setPassAccepted();
 		bool				isNickSet() const;
 		bool				isUserSet() const;
 		void				tryRegister();

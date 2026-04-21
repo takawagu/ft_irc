@@ -65,9 +65,9 @@ bool Client::isPassAccepted() const
 	return _pass_accepted;
 }
 
-void Client::setPassAccepted(bool val)
+void Client::setPassAccepted()
 {
-	_pass_accepted = val;
+	_pass_accepted = true;
 }
 
 bool Client::isNickSet() const
