@@ -23,7 +23,10 @@ class Client
 		void				setRealname(const std::string& real);
 
 		bool				isPassAccepted() const;
-		void				setPassAccepted(bool val);
+		void				setPassAccepted();
+		bool				isNickSet() const;
+		bool				isUserSet() const;
+		void				tryRegister();
 
 		void				joinChannel(const std::string& channel);
 		void				leaveChannel(const std::string& channel);
@@ -51,6 +54,8 @@ class Client
 		std::string	_realname;
 		bool		_registered;
 		bool		_pass_accepted;
+		bool		_nick_set;
+		bool		_user_set;
 		std::string	_recv_buffer;
 		std::string	_send_buffer;
 		std::set<std::string>	_joined_channels;
