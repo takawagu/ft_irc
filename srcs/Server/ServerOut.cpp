@@ -28,6 +28,11 @@ void Server::handleClientWrite(int fd)
 		setPollout(fd, false);
 }
 
+std::string Server::makePrefix(const Client& client) const
+{
+	return ":" + client.nickname() + "!" + client.username() + "@" + client.hostname();
+}
+
 void Server::sendError(Client& client, int fd, const std::string& code, const std::string& body)
 {
 	std::string nick = client.nickname();
