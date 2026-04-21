@@ -28,6 +28,16 @@ void Server::handleClientWrite(int fd)
 		setPollout(fd, false);
 }
 
+void Server::sendError(Client& client, int fd, const std::string& code, const std::string& body)
+{
+	std::string nick = client.nickname();
+	if (nick.empty())
+		nick = "*";
+	std::string reply = ":ircserv " + code + " " + nick + " " + body + "\r\n";
+	client.appendToSendBuffer(reply);
+	setPollout(fd, true);
+}
+
 bool Server::isSendSuccessful(ssize_t bytesSent, int fd)
 {
 	bool sendError   = (bytesSent < 0);

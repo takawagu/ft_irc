@@ -1,6 +1,9 @@
 #include "Config.hpp"
 
-Config::Config(const std::string& port_str, const std::string& password): _port(parsePort(port_str)), _password(validatePassword(password)){}
+Config::Config(const std::string& port_str, const std::string& password):
+ _port(parsePort(port_str)), 
+ _password(validatePassword(password))
+ {}
 
 Config::~Config() {}
 
@@ -29,7 +32,7 @@ void Config::validatePortStr(const std::string& str)
 	if (!isAllDigits(str))
 		throw std::invalid_argument("port \"" + str + "\" must contain only digits");
 	if (hasTooManyDigits(str))
-		throw std::invalid_argument("port \"" + str + "\" is out of range (1-65535)");
+		throw std::invalid_argument("port \"" + str + "\" " + portRangeStr());
 }
 
 bool Config::isAllDigits(const std::string& str)
@@ -54,9 +57,16 @@ void Config::checkPortRange(int port_num)
 	if (port_num < MIN_PORT || port_num > MAX_PORT)
 	{
 		std::ostringstream oss;
-		oss << "port " << port_num << " is out of range (" << MIN_PORT << "-" << MAX_PORT << ")";
+		oss << "port " << port_num << " " << portRangeStr();
 		throw std::out_of_range(oss.str());
 	}
+}
+
+std::string Config::portRangeStr()
+{
+	std::ostringstream oss;
+	oss << "is out of range (" << MIN_PORT << "-" << MAX_PORT << ")";
+	return oss.str();
 }
 
 const std::string& Config::validatePassword(const std::string& str)
