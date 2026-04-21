@@ -27,6 +27,7 @@ class Server
 
 		void	addToDisconnectList(int fd);
 		void	setPollout(int fd, bool enable);
+		void	sendError(Client& client, int fd, const std::string& code, const std::string& body);
 
 		Channel*	findChannel(const std::string& name) const;
 		Channel*	getOrCreateChannel(const std::string& name);

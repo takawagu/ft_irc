@@ -19,7 +19,7 @@ class Config
 		const std::string&	password() const;
 
 	private:
-		enum { MIN_PORT = 1, MAX_PORT = 65535, BASE_10 = 10 };
+		enum { MIN_PORT = 1024, MAX_PORT = 65535, BASE_10 = 10 };
 
 		int			_port;
 		std::string	_password;
