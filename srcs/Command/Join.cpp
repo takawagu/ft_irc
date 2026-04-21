@@ -2,11 +2,10 @@
 #include "Server.hpp"
 #include "Client.hpp"
 
-void Join::execute(Server& server, Client& client, int fd, const std::string& params)
+void Join::executeAction(Server& server, Client& client, int fd)
 {
 	(void)server;
 	(void)client;
 	(void)fd;
-	(void)params;
 	// TODO: implement JOIN
 }

@@ -5,8 +5,6 @@
 
 void Pass::executeAction(Server& server, Client& client, int fd)
 {
-	(void)fd;
-
 	if (params().size() <= 1)
 	{
 		server.sendError(client, fd, "461", "PASS :Not enough parameters");
