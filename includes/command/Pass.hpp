@@ -6,7 +6,7 @@
 class Pass : public ACommand
 {
 	public:
-		void execute(Server& server, Client& client, int fd, const std::string& params);
+		void executeAction(Server& server, Client& client, int fd);
 };
 
 #endif
