@@ -8,6 +8,8 @@ Client::Client(int fd, const std::string& hostname)
 	, _realname()
 	, _registered(false)
 	, _pass_accepted(false)
+	, _nick_set(false)
+	, _user_set(false)
 	, _recv_buffer()
 	, _send_buffer()
 	, _joined_channels()
@@ -39,11 +41,13 @@ const std::string& Client::username() const
 void Client::setNickname(const std::string& nick)
 {
 	_nickname = nick;
+	_nick_set = true;
 }
 
 void Client::setUsername(const std::string& user)
 {
 	_username = user;
+	_user_set = true;
 }
 
 const std::string& Client::realname() const
@@ -66,9 +70,19 @@ void Client::setPassAccepted(bool val)
 	_pass_accepted = val;
 }
 
+bool Client::isNickSet() const
+{
+	return _nick_set;
+}
+
+bool Client::isUserSet() const
+{
+	return _user_set;
+}
+
 void Client::tryRegister()
 {
-	if (_pass_accepted && _nickname != "*" && !_username.empty())
+	if (_pass_accepted && _nick_set && _user_set)
 		_registered = true;
 }
 
