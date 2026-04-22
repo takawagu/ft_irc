@@ -2,8 +2,6 @@
 #include "Server.hpp"
 #include "Client.hpp"
 
-bool isNicknameValid(const std::string& nick);
-
 void Nick::executeAction(Server& server, Client& client, int fd)
 {
 	if (params().size() <= 1)
@@ -29,15 +27,15 @@ void Nick::executeAction(Server& server, Client& client, int fd)
 
 static bool isNicknameSymbol(char c);
 
-bool isNicknameValid(const std::string& nick)
+bool Nick::isNicknameValid(const std::string& nick)
 {
 	if (nick.empty() || nick.length() > MAX_NICKNAME_LENGTH)
 		return false;
 	if (!isalpha(nick[0]))
 		return false;
-	for (size_t i = 1; i < nick.length(); ++i)
+	for (size_t i = 1; i < nick.length(); i++)
 	{
-		if (!isalnum(nick[i]) && isNicknameSymbol(nick[i]))
+		if (!isalnum(nick[i]) && !isNicknameSymbol(nick[i]))
 			return false;
 	}
 	return true;
@@ -45,7 +43,7 @@ bool isNicknameValid(const std::string& nick)
 
 static bool isNicknameSymbol(char c)
 {
-	return c == '-' || c == '_' || c == '[' || c == ']' || c == '\\' || c == '^' || c == '{' || c == '}' || c == '|';
+	return c == '-' || c == '[' || c == ']' || c == '\\' || c == '`' || c == '^' || c == '{' || c == '}' ;
 }
 
 // 最大9文字(MAX_NICKNAME_LENGTH)
@@ -54,3 +52,6 @@ static bool isNicknameSymbol(char c)
 // スペースは禁止
 // 大文字小文字は特殊ルールあり（{ = [ など）
 // ネットワーク内でユニーク必須
+
+//   <nick>       ::= <letter> { <letter> | <number> | <special> }
+//    <special>    ::= '-' | '[' | ']' | '\' | '`' | '^' | '{' | '}'
