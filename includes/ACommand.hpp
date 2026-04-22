@@ -21,7 +21,6 @@ class ACommand
 
 	private:
 		std::vector<std::string> _params;
-		static std::string trimEnd(const std::string& str);
 };
 
 #endif
