@@ -3,6 +3,8 @@
 
 #include "ACommand.hpp"
 
+#define MAX_NICKNAME_LENGTH 9
+
 class Nick : public ACommand
 {
 	public:
