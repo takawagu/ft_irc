@@ -6,22 +6,28 @@ bool Server::checkPassword(const std::string& pass) const
     return pass == _config.password();
 }
 
-std::string toScandanavianLower(const std::string& nick);
-
 bool Server::isNicknameTaken(const std::string& nick) const
 {
-    std::map<int, Client*>::const_iterator it = _clients.begin();
-    for (; it != _clients.end(); it++)
+    if (_clients.empty())
+        return false;
+
+    std::string new_nick=toScandanavianLower(nick);
+
+    for (std::map<int, Client*>::const_iterator it = _clients.begin(); it != _clients.end(); ++it)
     {
-        std::string client_nick = toScandanavianLower(it->second->nickname());
-        std::string new_nick=toScandanavianLower(nick);
-        if (client_nick == new_nick)
+        const std::string& existing = it->second->nickname();
+
+        // std::cout << "[DEBUG] comparing '" 
+        //           << existing << "' with '" 
+        //           << nick << "'" << std::endl;
+
+        if (!existing.empty() && toScandanavianLower(existing) == new_nick)
             return true;
     }
     return false;
 }
 
-std::string toScandanavianLower(const std::string& nick)
+std::string Server::toScandanavianLower(const std::string& nick) const
 {
     std::string new_nick=nick;
     for (size_t i = 0; i < new_nick.length(); i++)
