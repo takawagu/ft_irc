@@ -1,6 +1,11 @@
 #include "Server.hpp"
 #include "Client.hpp"
 
+void Server::addClient(int fd, Client* client)
+{
+	_clients[fd] = client;
+}
+
 bool Server::checkPassword(const std::string& pass) const
 {
     return pass == _config.password();

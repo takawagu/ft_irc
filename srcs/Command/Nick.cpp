@@ -22,6 +22,7 @@ void Nick::executeAction(Server& server, Client& client, int fd)
 	std::string old_nick = client.nickname();
 	client.setNickname(params()[1]);
 	client.appendToSendBuffer(":" + old_nick + " NICK " + client.nickname() + "\r\n");
+	client.tryRegister();
 	return;
 }
 
