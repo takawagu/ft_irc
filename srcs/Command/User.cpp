@@ -6,7 +6,7 @@ static void sendWelcomeMessage(Client& client);
 
 void User::executeAction(Server& server, Client& client, int fd)
 {
-	if (params().size() < 5)
+	if (params().size() < 4)
 	{
 		server.sendError(client, fd, "461", "USER :Not enough parameters");
 		return;
@@ -16,8 +16,8 @@ void User::executeAction(Server& server, Client& client, int fd)
 		server.sendError(client, fd, "462", ":You may not reregister");
 		return;
 	}
-	client.setUsername(params()[1]);
-	client.setRealname(params()[4]);
+	client.setUsername(params()[0]);
+	client.setRealname(params()[3]);
 	if (client.tryRegister())
 	{
 		sendWelcomeMessage(client);
