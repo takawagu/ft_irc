@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-void commandTest(int argc, char** argv);
+void commandTest();
 
 static void ircserv(int argc, char** argv)
 {
@@ -27,6 +27,8 @@ static void ircserv(int argc, char** argv)
 int main(int argc, char** argv)
 {
 	ircserv(argc, argv);
-	commandTest(argc,argv);
+	// (void)argc;
+	// (void)argv;
+	commandTest();
 	return 0;
 }
