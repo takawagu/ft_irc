@@ -36,6 +36,8 @@ class Server
 		Client*		findClientByNick(const std::string& nick) const;
 
 		bool checkPassword(const std::string& pass) const;
+		bool isNicknameTaken(const std::string& nick) const;
+		std::string toScandanavianLower(const std::string& nick) const;
 	private:
 		static volatile sig_atomic_t	_stop;
 		static void						signalHandler(int sig);
