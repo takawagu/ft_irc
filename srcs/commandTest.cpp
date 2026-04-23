@@ -3,12 +3,14 @@
 #include "Client.hpp"
 #include "Pass.hpp"
 #include "Nick.hpp"
+#include "User.hpp"
 
 #include <iostream>
 
 void PassTest();
 void trimTest();
 void NickTest();
+void RegisterTest();
 
 void commandTest(int argc, char** argv)
 {
@@ -16,7 +18,8 @@ void commandTest(int argc, char** argv)
 	(void)argv; 
 	// trimTest();
 	// PassTest();
-	NickTest();
+	// NickTest();
+	RegisterTest();
 }
 
 void PassTest(){
@@ -79,6 +82,28 @@ void NickTest(){
 	std::cout << "Client 2 nickname: " << client2->nickname() << std::endl;
 }
 
+void RegisterTest(){
+	std::cout << "<<Register test>>" << std::endl;
+	Config config("6667", "password");
+	Server server(config);
+	Client* client = new Client(0, "tochi");
+
+	ACommand* pass_cmd = new Pass();
+	pass_cmd->execute(server, *client, 0, "PASS password\r\n");
+	std::cout << client->sendBuffer() << std::endl;
+	client->removeSentData(client->sendBuffer().length());
+
+	ACommand* nick_cmd = new Nick();
+	nick_cmd->execute(server, *client, 0, "Nick tochi\r\n");
+	std::cout << client->sendBuffer() << std::endl;
+	client->removeSentData(client->sendBuffer().length());
+
+	ACommand* user_cmd = new User();
+	user_cmd->execute(server, *client, 0, "USER tomo 0 * :Tomo Okuno\r\n");
+	std::cout << client->sendBuffer() << std::endl;
+	client->removeSentData(client->sendBuffer().length());
+}
+
 void trimTest(){
 	std::cout << "trim test" << std::endl;
 	ACommand* cmd = new Pass();
@@ -101,4 +126,8 @@ void trimTest(){
 	cmd->execute(server, *client, 0, "Pass\r\n");
 	std::cout << client->sendBuffer() << std::endl;
 	client->removeSentData(client->sendBuffer().length());
+
+	std::cout << "--- no arg test ---" << std::endl;
+	cmd->execute(server, *client, 0, "USER tomo 0 * :Tomo Okuno");
+
 }
