@@ -26,7 +26,7 @@ class Client
 		void				setPassAccepted();
 		bool				isNickSet() const;
 		bool				isUserSet() const;
-		void				tryRegister();
+		bool				tryRegister();
 
 		void				joinChannel(const std::string& channel);
 		void				leaveChannel(const std::string& channel);
