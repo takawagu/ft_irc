@@ -62,7 +62,7 @@ void Server::processClientRequests(Client& client, int fd)
 	while (client.extractLine(line))
 	{
 		std::string command;
-		std::string params;
+		std::vector<std::string> params;
 		if (parseRequest(line, command, params))
 			handleCommand(client, fd, command, params);
 	}

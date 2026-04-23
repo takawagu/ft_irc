@@ -7,9 +7,8 @@
 
 static bool isAllowedBeforeRegistration(const std::string& command);
 static std::string extractCommand(const std::string& line, std::string::size_type& pos);
-static std::string extractParams(const std::string& line, std::string::size_type pos);
+static void parseParams(const std::string& line, std::string::size_type pos, std::vector<std::string>& params);
 static void skipSpaces(const std::string& line, std::string::size_type& pos);
-static std::string::size_type findCmdEnd(const std::string& line, std::string::size_type pos);
 
 
 void Server::initCommandMap()
@@ -29,7 +28,7 @@ void Server::initCommandMap()
 	_cmd_map["PART"]    = new Part();
 }
 
-void Server::handleCommand(Client& client, int fd, const std::string& command, const std::string& params)
+void Server::handleCommand(Client& client, int fd, const std::string& command, const std::vector<std::string>& params)
 {
 	ACommand* cmd = findInCmdMap(command);
 	if (cmd == NULL)
@@ -62,7 +61,7 @@ void Server::deleteCommandMap()
 	_cmd_map.clear();
 }
 
-bool Server::parseRequest(const std::string& line, std::string& command, std::string& params)
+bool Server::parseRequest(const std::string& line, std::string& command, std::vector<std::string>& params)
 {
 	std::cout << ">> " << line << std::endl;
 
@@ -71,7 +70,8 @@ bool Server::parseRequest(const std::string& line, std::string& command, std::st
 	if (command.empty())
 		return false;
 
-	params = extractParams(line, pos);
+	params.clear();
+	parseParams(line, pos, params);
 	return true;
 }
 
@@ -81,26 +81,38 @@ static std::string extractCommand(const std::string& line, std::string::size_typ
 	if (pos == line.size())
 		return std::string();
 
-	std::string::size_type cmd_end = findCmdEnd(line, pos);
-	std::string command = line.substr(pos, cmd_end - pos);
-	pos = cmd_end;
+	std::string::size_type end = line.find(' ', pos);
+	if (end == std::string::npos)
+		end = line.size();
+
+	std::string command = line.substr(pos, end - pos);
+	pos = end;
 	return command;
 }
 
-static std::string::size_type findCmdEnd(const std::string& line, std::string::size_type pos)
+// IRC RFC 準拠: ':' で始まるトークンはそれ以降を trailing として1つのパラメータにまとめる
+static void parseParams(const std::string& line, std::string::size_type pos, std::vector<std::string>& params)
 {
-	std::string::size_type end = line.find(' ', pos);
-	if (end == std::string::npos)
-		return line.size();
-	return end;
-}
+	while (pos < line.size())
+	{
+		skipSpaces(line, pos);
+		if (pos >= line.size())
+			break;
 
-static std::string extractParams(const std::string& line, std::string::size_type pos)
-{
-	skipSpaces(line, pos);
-	return line.substr(pos);
-}
+		if (line[pos] == ':')
+		{
+			params.push_back(line.substr(pos + 1));
+			break;
+		}
 
+		std::string::size_type end = line.find(' ', pos);
+		if (end == std::string::npos)
+			end = line.size();
+
+		params.push_back(line.substr(pos, end - pos));
+		pos = end;
+	}
+}
 
 static void skipSpaces(const std::string& line, std::string::size_type& pos)
 {
