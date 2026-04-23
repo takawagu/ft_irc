@@ -15,7 +15,7 @@ void RegisterTest();
 void commandTest(int argc, char** argv)
 {
 	(void)argc;
-	(void)argv; 
+	(void)argv;
 	// trimTest();
 	// PassTest();
 	// NickTest();
@@ -48,6 +48,7 @@ void NickTest(){
 	Config config("6667", "password");
 	Server server(config);
 	Client* client = new Client(0, "tochi");
+	server.addClient(0, client);
 
 	cmd->execute(server, *client, 0, "Nick\r\n");
 	std::cout << client->sendBuffer() << std::endl;
@@ -73,13 +74,37 @@ void NickTest(){
 	client->removeSentData(client->sendBuffer().length());
 
 	// same nickname is not allowed
-	Client* client2 = new Client(0, "tochi2");
+	Client* client2 = new Client(1, "tochi2");
+	server.addClient(1, client2);
 	cmd->execute(server, *client2, 0, "Nick tochi\r\n");
 	std::cout << client2->sendBuffer() << std::endl;
 	client2->removeSentData(client2->sendBuffer().length());
 
 	std::cout << "Client 1 nickname: " << client->nickname() << std::endl;
 	std::cout << "Client 2 nickname: " << client2->nickname() << std::endl;
+
+	// case-insensitive: Tochi == tochi
+	Client* client3 = new Client(2, "tochi3");
+	server.addClient(2, client3);
+	cmd->execute(server, *client3, 2, "Nick Tochi\r\n");
+	std::cout << client3->sendBuffer() << std::endl;
+	client3->removeSentData(client3->sendBuffer().length());
+	std::cout << "Client 3 nickname: " << client3->nickname() << std::endl;
+
+	// scandinavian: T{} == T[]
+	Client* client4 = new Client(3, "tochi4");
+	server.addClient(3, client4);
+	cmd->execute(server, *client4, 3, "Nick T[]\r\n");
+	std::cout << client4->sendBuffer() << std::endl;
+	client4->removeSentData(client4->sendBuffer().length());
+	std::cout << "Client 4 nickname: " << client4->nickname() << std::endl;
+
+	Client* client5 = new Client(4, "tochi5");
+	server.addClient(4, client5);
+	cmd->execute(server, *client5, 4, "Nick T{}\r\n");
+	std::cout << client5->sendBuffer() << std::endl;
+	client5->removeSentData(client5->sendBuffer().length());
+	std::cout << "Client 5 nickname: " << client5->nickname() << std::endl;
 }
 
 void RegisterTest(){

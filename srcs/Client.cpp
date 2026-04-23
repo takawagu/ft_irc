@@ -33,15 +33,15 @@ const std::string& Client::nickname() const
 	return _nickname;
 }
 
-const std::string& Client::username() const
-{
-	return _username;
-}
-
 void Client::setNickname(const std::string& nick)
 {
 	_nickname = nick;
 	_nick_set = true;
+}
+
+const std::string& Client::username() const
+{
+	return _username;
 }
 
 void Client::setUsername(const std::string& user)
@@ -80,6 +80,16 @@ bool Client::isUserSet() const
 	return _user_set;
 }
 
+bool Client::isRegistered() const
+{
+	return _registered;
+}
+
+void Client::setRegistered(bool val)
+{
+	_registered = val;
+}
+
 bool Client::tryRegister()
 {
 	if (_pass_accepted && _nick_set && _user_set){
@@ -107,16 +117,6 @@ bool Client::isOnChannel(const std::string& channel) const
 const std::set<std::string>& Client::joinedChannels() const
 {
 	return _joined_channels;
-}
-
-bool Client::isRegistered() const
-{
-	return _registered;
-}
-
-void Client::setRegistered(bool val)
-{
-	_registered = val;
 }
 
 void Client::appendToRecvBuffer(const char* data, std::size_t len)

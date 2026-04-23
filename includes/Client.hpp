@@ -14,18 +14,21 @@ class Client
 
 		int					fd() const;
 		const std::string&	hostname() const;
-		const std::string&	nickname() const;
-		const std::string&	username() const;
-		const std::string&	realname() const;
 
+		const std::string&	nickname() const;
 		void				setNickname(const std::string& nick);
+		const std::string&	username() const;
 		void				setUsername(const std::string& user);
+		const std::string&	realname() const;
 		void				setRealname(const std::string& real);
 
 		bool				isPassAccepted() const;
 		void				setPassAccepted();
 		bool				isNickSet() const;
 		bool				isUserSet() const;
+		
+		bool				isRegistered() const;
+		void				setRegistered(bool val);
 		bool				tryRegister();
 
 		void				joinChannel(const std::string& channel);
@@ -35,10 +38,6 @@ class Client
 
 		void				appendToRecvBuffer(const char* data, std::size_t len);
 		bool				extractLine(std::string& out);
-
-		bool				isRegistered() const;
-		void				setRegistered(bool val);
-
 		bool				isRecvBufferFull() const;
 
 		void				appendToSendBuffer(const std::string& msg);
