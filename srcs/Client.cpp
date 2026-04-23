@@ -90,10 +90,13 @@ void Client::setRegistered(bool val)
 	_registered = val;
 }
 
-void Client::tryRegister()
+bool Client::tryRegister()
 {
-	if (_pass_accepted && _nick_set && _user_set)
+	if (_pass_accepted && _nick_set && _user_set){
 		_registered = true;
+		return true;
+	}
+	return false;
 }
 
 void Client::joinChannel(const std::string& channel)

@@ -3,12 +3,14 @@
 #include "Client.hpp"
 #include "Pass.hpp"
 #include "Nick.hpp"
+#include "User.hpp"
 
 #include <iostream>
 
 void PassTest();
 void trimTest();
 void NickTest();
+void RegisterTest();
 
 static std::vector<std::string> makeParams()
 {
@@ -30,11 +32,22 @@ static std::vector<std::string> makeParams(const std::string& a, const std::stri
 	return v;
 }
 
+static std::vector<std::string> makeParams(const std::string& a, const std::string& b,const std::string& c, const std::string& d)
+{
+	std::vector<std::string> v;
+	v.push_back(a);
+	v.push_back(b);
+	v.push_back(c);
+	v.push_back(d);
+	return v;
+}
+
 void commandTest()
 {
 	// trimTest();
 	// PassTest();
-	NickTest();
+	// NickTest();
+	RegisterTest();
 }
 
 void PassTest(){
@@ -122,6 +135,28 @@ void NickTest(){
 	std::cout << "Client 5 nickname: " << client5->nickname() << std::endl;
 }
 
+void RegisterTest(){
+	std::cout << "<<Register test>>" << std::endl;
+	Config config("6667", "password");
+	Server server(config);
+	Client* client = new Client(0, "tochi");
+
+	ACommand* pass_cmd = new Pass();
+	pass_cmd->execute(server, *client, 0, makeParams("password"));
+	std::cout << client->sendBuffer() << std::endl;
+	client->removeSentData(client->sendBuffer().length());
+
+	ACommand* nick_cmd = new Nick();
+	nick_cmd->execute(server, *client, 0, makeParams("tochi"));
+	std::cout << client->sendBuffer() << std::endl;
+	client->removeSentData(client->sendBuffer().length());
+
+	ACommand* user_cmd = new User();
+	user_cmd->execute(server, *client, 0, makeParams("tomo", "0", "*", "Tomo Ka"));
+	std::cout << client->sendBuffer() << std::endl;
+	client->removeSentData(client->sendBuffer().length());
+}
+
 void trimTest(){
 	std::cout << "trim test" << std::endl;
 	ACommand* cmd = new Pass();
@@ -142,4 +177,7 @@ void trimTest(){
 	cmd->execute(server, *client, 0, makeParams());
 	std::cout << client->sendBuffer() << std::endl;
 	client->removeSentData(client->sendBuffer().length());
+
+	std::cout << "--- no arg test ---" << std::endl;
+	cmd->execute(server, *client, 0, makeParams("tomo", "0", "*", "Tomo Ka"));
 }
