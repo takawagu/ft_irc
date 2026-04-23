@@ -39,6 +39,7 @@ class Server
 		bool isNicknameTaken(const std::string& nick) const;
 		std::string toScandanavianLower(const std::string& nick) const;
 		void addClient(int fd, Client* client);
+
 	private:
 		static volatile sig_atomic_t	_stop;
 		static void						signalHandler(int sig);
@@ -68,7 +69,7 @@ class Server
 
 		void		initCommandMap();
 		ACommand*	findInCmdMap(const std::string& command) const;
-		void		handleCommand(Client& client, int fd, const std::string& command, const std::string& params);
+		void		handleCommand(Client& client, int fd, const std::string& command, const std::vector<std::string>& params);
 
 		void	acceptNewClient();
 		int		acceptConnection(struct sockaddr_in& addr);
@@ -80,7 +81,7 @@ class Server
 		bool	isRecvSuccessful(ssize_t bytesReceived, int fd);
 		bool	isRecvBufferAvailable(Client& client, int fd);
 		void	processClientRequests(Client& client, int fd);
-		bool	parseRequest(const std::string& line, std::string& command, std::string& params);
+		bool	parseRequest(const std::string& line, std::string& command, std::vector<std::string>& params);
 		void	handleClientWrite(int fd);
 		bool	isSendSuccessful(ssize_t bytesSent, int fd);
 		void	deleteCommandMap();

@@ -4,23 +4,23 @@
 
 void Nick::executeAction(Server& server, Client& client, int fd)
 {
-	if (params().size() <= 1)
+	if (params().empty())
 	{
 		server.sendError(client, fd, "431", ":No nickname given");
 		return;
 	}
-	if (!isNicknameValid(params()[1]))
+	if (!isNicknameValid(params()[0]))
 	{
-		server.sendError(client, fd, "432", params()[1] + " :Erroneus nickname");
+		server.sendError(client, fd, "432", params()[0] + " :Erroneus nickname");
 		return;
 	}
-	if (server.isNicknameTaken(params()[1]))
+	if (server.isNicknameTaken(params()[0]))
 	{
-		server.sendError(client, fd, "433", params()[1] + " :Nickname is already in use");
+		server.sendError(client, fd, "433", params()[0] + " :Nickname is already in use");
 		return;
 	}
 	std::string old_nick = client.nickname();
-	client.setNickname(params()[1]);
+	client.setNickname(params()[0]);
 	client.appendToSendBuffer(":" + old_nick + " NICK " + client.nickname() + "\r\n");
 	client.tryRegister();
 	return;

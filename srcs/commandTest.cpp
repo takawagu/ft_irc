@@ -10,6 +10,26 @@ void PassTest();
 void trimTest();
 void NickTest();
 
+static std::vector<std::string> makeParams()
+{
+	return std::vector<std::string>();
+}
+
+static std::vector<std::string> makeParams(const std::string& a)
+{
+	std::vector<std::string> v;
+	v.push_back(a);
+	return v;
+}
+
+static std::vector<std::string> makeParams(const std::string& a, const std::string& b)
+{
+	std::vector<std::string> v;
+	v.push_back(a);
+	v.push_back(b);
+	return v;
+}
+
 void commandTest()
 {
 	// trimTest();
@@ -24,15 +44,15 @@ void PassTest(){
 	Server server(config);
 	Client* client = new Client(0, "tochi");
 
-	cmd->execute(server, *client, 0, "Pass password\r\n");
+	cmd->execute(server, *client, 0, makeParams("password"));
 	std::cout << client->sendBuffer() << std::endl;
 	client->removeSentData(client->sendBuffer().length());
 
-	cmd->execute(server, *client, 0, "Pass \r\n");
+	cmd->execute(server, *client, 0, makeParams());
 	std::cout << client->sendBuffer() << std::endl;
 	client->removeSentData(client->sendBuffer().length());
 
-	cmd->execute(server, *client, 0, "Pass pass word\r\n");
+	cmd->execute(server, *client, 0, makeParams("pass", "word"));
 	std::cout << client->sendBuffer() << std::endl;
 	client->removeSentData(client->sendBuffer().length());
 }
@@ -45,33 +65,33 @@ void NickTest(){
 	Client* client = new Client(0, "tochi");
 	server.addClient(0, client);
 
-	cmd->execute(server, *client, 0, "Nick\r\n");
+	cmd->execute(server, *client, 0, makeParams());
 	std::cout << client->sendBuffer() << std::endl;
 	client->removeSentData(client->sendBuffer().length());
 
-	cmd->execute(server, *client, 0, "Nick tochi\r\n");
+	cmd->execute(server, *client, 0, makeParams("tochi"));
 	std::cout << client->sendBuffer() << std::endl;
 	client->removeSentData(client->sendBuffer().length());
 
 	//　first char is only letter
-	cmd->execute(server, *client, 0, "Nick 123number\r\n");
+	cmd->execute(server, *client, 0, makeParams("123number"));
 	std::cout << client->sendBuffer() << std::endl;
 	client->removeSentData(client->sendBuffer().length());
 
 	// ! is not allowed
-	cmd->execute(server, *client, 0, "Nick tochi!\r\n");
+	cmd->execute(server, *client, 0, makeParams("tochi!"));
 	std::cout << client->sendBuffer() << std::endl;
 	client->removeSentData(client->sendBuffer().length());
 
 	// length <= 9
-	cmd->execute(server, *client, 0, "Nick T123456789\r\n");
+	cmd->execute(server, *client, 0, makeParams("T123456789"));
 	std::cout << client->sendBuffer() << std::endl;
 	client->removeSentData(client->sendBuffer().length());
 
 	// same nickname is not allowed
 	Client* client2 = new Client(1, "tochi2");
 	server.addClient(1, client2);
-	cmd->execute(server, *client2, 0, "Nick tochi\r\n");
+	cmd->execute(server, *client2, 0, makeParams("tochi"));
 	std::cout << client2->sendBuffer() << std::endl;
 	client2->removeSentData(client2->sendBuffer().length());
 
@@ -81,7 +101,7 @@ void NickTest(){
 	// case-insensitive: Tochi == tochi
 	Client* client3 = new Client(2, "tochi3");
 	server.addClient(2, client3);
-	cmd->execute(server, *client3, 2, "Nick Tochi\r\n");
+	cmd->execute(server, *client3, 2, makeParams("Tochi"));
 	std::cout << client3->sendBuffer() << std::endl;
 	client3->removeSentData(client3->sendBuffer().length());
 	std::cout << "Client 3 nickname: " << client3->nickname() << std::endl;
@@ -89,14 +109,14 @@ void NickTest(){
 	// scandinavian: T{} == T[]
 	Client* client4 = new Client(3, "tochi4");
 	server.addClient(3, client4);
-	cmd->execute(server, *client4, 3, "Nick T[]\r\n");
+	cmd->execute(server, *client4, 3, makeParams("T[]"));
 	std::cout << client4->sendBuffer() << std::endl;
 	client4->removeSentData(client4->sendBuffer().length());
 	std::cout << "Client 4 nickname: " << client4->nickname() << std::endl;
 
 	Client* client5 = new Client(4, "tochi5");
 	server.addClient(4, client5);
-	cmd->execute(server, *client5, 4, "Nick T{}\r\n");
+	cmd->execute(server, *client5, 4, makeParams("T{}"));
 	std::cout << client5->sendBuffer() << std::endl;
 	client5->removeSentData(client5->sendBuffer().length());
 	std::cout << "Client 5 nickname: " << client5->nickname() << std::endl;
@@ -109,9 +129,8 @@ void trimTest(){
 	Server server(config);
 	Client* client = new Client(0, "tochi");
 
-	// trim確認: \r\nあり・パスワード一致 → successなら trim OK、464なら \r が残っている
 	std::cout << "--- trim test ---" << std::endl;
-	cmd->execute(server, *client, 0, "Pass password\r\n");
+	cmd->execute(server, *client, 0, makeParams("password"));
 	std::string trimResult = client->sendBuffer();
 	client->removeSentData(trimResult.length());
 	if (trimResult.empty())
@@ -119,9 +138,8 @@ void trimTest(){
 	else
 		std::cout << "[NG] \\r not trimmed: " << trimResult << std::endl;
 
-	// 引数なし（スペースもない）→ 461
 	std::cout << "--- no arg test ---" << std::endl;
-	cmd->execute(server, *client, 0, "Pass\r\n");
+	cmd->execute(server, *client, 0, makeParams());
 	std::cout << client->sendBuffer() << std::endl;
 	client->removeSentData(client->sendBuffer().length());
 }
