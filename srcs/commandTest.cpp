@@ -7,6 +7,7 @@
 #include "User.hpp"
 #include "Privmsg.hpp"
 #include "Join.hpp"
+#include "Topic.hpp"
 
 #include <iostream>
 
@@ -16,6 +17,7 @@ void NickTest();
 void RegisterTest();
 void PrivmsgTest();
 void JoinTest();
+void topicTest();
 
 static std::vector<std::string> makeParams()
 {
@@ -54,7 +56,8 @@ void commandTest()
 	// NickTest();
 	// RegisterTest();
 	// JoinTest();
-	PrivmsgTest();
+	// PrivmsgTest();
+	topicTest();
 }
 
 void PassTest(){
@@ -501,6 +504,53 @@ void JoinTest()
 	}
 
 	delete join;
+}
+
+void topicTest()
+{
+	std::cout << "<<Topic test>>" << std::endl;
+	Config config("6667", "password");
+	Server server(config);
+	Client* alice = makeRegisteredClient(server, 100, "alice");
+	Client* bob = makeRegisteredClient(server, 101, "bob");
+
+	Channel* ch = server.getOrCreateChannel("#general");
+	ch->addMember(alice);
+	ch->addMember(bob);
+
+	ACommand* topic = new Topic();
+
+	// パラメータなし → 461 Not enough parameters
+	{
+		std::cout << "-- no params --" << std::endl;
+		topic->execute(server, *alice, 100, makeParams());
+		printAndFlush(alice, "461 expected");
+	}
+
+	// チャンネル名のみ → トピック表示（トピックなし）
+	{
+		std::cout << "-- channel name only (no topic) --" << std::endl;
+		topic->execute(server, *alice, 100, makeParams("#general"));
+		printAndFlush(alice, "331 expected");
+	}
+
+	// チャンネル名のみ → トピック表示（トピックあり）
+	{
+		std::cout << "-- channel name only (with topic) --" << std::endl;
+		ch->setTopic("hello world", "alice");
+		topic->execute(server, *alice, 100, makeParams("#general"));
+		printAndFlush(alice, "332 expected");
+	}
+
+	// チャンネル名 + 新しいトピック → トピック変更
+	{
+		std::cout << "-- channel name + new topic --" << std::endl;
+		topic->execute(server, *alice, 100, makeParams("#general", "new topic"));
+		printAndFlush(alice, "topic changed expected");
+		printAndFlush(bob, "topic changed expected");
+	}
+
+	delete topic;
 }
 
 void trimTest(){
