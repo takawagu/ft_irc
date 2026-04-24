@@ -4,6 +4,9 @@
 #include "Nick.hpp"
 #include "Channel.hpp"
 
+void sendForChannel(Server& server, Client& client, int fd, const std::string& channel_name, std::string message);
+void sendForTarget(Server& server, Client& client, int fd, const std::string& target, std::string message);
+
 //    Parameters: <receiver>{,<receiver>} <text to be sent>
 void Privmsg::executeAction(Server& server, Client& client, int fd)
 {
@@ -22,34 +25,51 @@ void Privmsg::executeAction(Server& server, Client& client, int fd)
 		server.sendError(client, fd, "412", "nick :No text to send");
 		return;
 	}
-	if (params()[0][0] == '#')
+
+	std::vector<std::string> receivers;
+	receivers = splitByComma(params()[0]);
+
+	for (std::vector<std::string>::iterator it = receivers.begin(); it != receivers.end(); ++it)
 	{
-		std::string channel_name = params()[0].substr(1);
-		Channel* channel = server.findChannel(channel_name);
-		if (channel == NULL)
+		if (it->at(0) == '#')
 		{
-			server.sendError(client, fd, "403", params()[0] + " :No such channel");
-			return;
+			std::string channel_name = (*it).substr(1);
+			sendForChannel(server, client, fd, channel_name, params()[1]);
 		}
-		if (!channel->hasMember(&client))
+		else
 		{
-			server.sendError(client, fd, "404", params()[0] + " :Cannot send to channel");
-			return;
-		}
-		std::string msg = ":" + client.nickname() + " PRIVMSG " + params()[0] + " :" + params()[1] + "\r\n";
-		server.broadcastToChannel(channel, msg, &client);
+			sendForTarget(server, client, fd, *it, params()[1]);
+		}	
+	}
+	return;
+}
+
+void sendForChannel(Server& server, Client& client, int fd, const std::string& channel_name, std::string message)
+{
+	Channel* channel = server.findChannel(channel_name);
+	if (channel == NULL)
+	{
+		server.sendError(client, fd, "403", channel_name + " :No such channel");
 		return;
 	}
-	else
+	if (!channel->hasMember(&client))
 	{
-		Client* target = server.findClientByNick(params()[0]);
-		if (target == NULL)
-		{
-			server.sendError(client, fd, "401", params()[0] + " :No such nick/channel");
-			return;
-		}
-		std::string msg = ":" + client.nickname() + " PRIVMSG " + params()[0] + " :" + params()[1] + "\r\n";
-		target->appendToSendBuffer(msg);
-		server.setPollout(target->fd(), true);
+		server.sendError(client, fd, "404", channel_name + " :Cannot send to channel");
+		return;
 	}
+	std::string msg = ":" + client.nickname() + " PRIVMSG " + channel_name + " :" + message + "\r\n";
+	server.broadcastToChannel(channel, msg, &client);
+}
+
+void sendForTarget(Server& server, Client& client, int fd, const std::string& target, std::string message)
+{
+	Client* target_client = server.findClientByNick(target);
+	if (target_client == NULL)
+	{
+		server.sendError(client, fd, "401", target + " :No such nick/channel");
+		return;
+	}
+	std::string msg = ":" + client.nickname() + " PRIVMSG " + target + " :" + message + "\r\n";
+	target_client->appendToSendBuffer(msg);
+	server.setPollout(target_client->fd(), true);
 }
