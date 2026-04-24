@@ -17,7 +17,6 @@ void RegisterTest();
 void PrivmsgTest();
 void JoinTest();
 
-
 static std::vector<std::string> makeParams()
 {
 	return std::vector<std::string>();

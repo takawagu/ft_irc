@@ -31,6 +31,6 @@ void User::executeAction(Server& server, Client& client, int fd)
 
 static void sendWelcomeMessage(Client& client)
 {
-	std::string welcome_msg = client.nickname() + " :Welcome to the Internet Relay Network " + client.nickname() + "!" + client.username() + "@" + client.hostname() + "\r\n";
+	std::string welcome_msg = client.nickname() + " :Welcome to the Internet Relay Network " + client.prefix() + "\r\n";
 	client.appendToSendBuffer(welcome_msg);
 }
