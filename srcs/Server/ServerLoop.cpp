@@ -23,12 +23,11 @@ void Server::loop()
 void Server::waitForEvents()
 {
 	int ready = -1;
-	bool unrecoverableError = (ready < 0 && errno != EINTR);
 
 	while (ready < 0)
 	{
 		ready = poll(&_pfds[0], _pfds.size(), -1);
-		if (unrecoverableError)
+		if (ready < 0 && errno != EINTR)
 			throw std::runtime_error("poll: " + std::string(std::strerror(errno)));
 	}
 }

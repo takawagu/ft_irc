@@ -28,6 +28,11 @@ const std::string& Client::hostname() const
 	return _hostname;
 }
 
+std::string Client::prefix() const
+{
+	return _nickname + "!" + _username + "@" + _hostname;
+}
+
 const std::string& Client::nickname() const
 {
 	return _nickname;

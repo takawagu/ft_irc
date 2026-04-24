@@ -14,6 +14,7 @@ class Client
 
 		int					fd() const;
 		const std::string&	hostname() const;
+		std::string			prefix() const;
 
 		const std::string&	nickname() const;
 		void				setNickname(const std::string& nick);
