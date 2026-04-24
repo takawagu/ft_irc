@@ -4,27 +4,14 @@
 #include "Nick.hpp"
 #include "Channel.hpp"
 
-void sendForChannel(Server& server, Client& client, int fd, const std::string& channel_name, std::string message);
-void sendForTarget(Server& server, Client& client, int fd, const std::string& target, std::string message);
+static void sendForChannel(Server& server, Client& client, int fd, const std::string& channel_name, std::string message);
+static void sendForTarget(Server& server, Client& client, int fd, const std::string& target, std::string message);
 
 //    Parameters: <receiver>{,<receiver>} <text to be sent>
 void Privmsg::executeAction(Server& server, Client& client, int fd)
 {
-	if (params().empty())
-	{
-		server.sendError(client, fd, "461", "PRIVMSG :Not enough parameters");
+	if (!paramsErrorCheck(server, client, fd))
 		return;
-	}
-	if (params()[0][0] == ':')
-	{
-		server.sendError(client, fd, "411", "nick :No recipient given (PRIVMSG)");
-		return;
-	}
-	if(params().size() < 2)
-	{
-		server.sendError(client, fd, "412", "nick :No text to send");
-		return;
-	}
 
 	std::vector<std::string> receivers;
 	receivers = splitByComma(params()[0]);
@@ -42,6 +29,26 @@ void Privmsg::executeAction(Server& server, Client& client, int fd)
 		}	
 	}
 	return;
+}
+
+bool Privmsg::paramsErrorCheck(Server& server, Client& client, int fd)
+{
+	if (params().empty())
+	{
+		server.sendError(client, fd, "461", "PRIVMSG :Not enough parameters");
+		return false;
+	}
+	if (params()[0][0] == ':')
+	{
+		server.sendError(client, fd, "411", "nick :No recipient given (PRIVMSG)");
+		return false;
+	}
+	if(params().size() < 2)
+	{
+		server.sendError(client, fd, "412", "nick :No text to send");
+		return false;
+	}
+	return true;
 }
 
 void sendForChannel(Server& server, Client& client, int fd, const std::string& channel_name, std::string message)
