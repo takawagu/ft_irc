@@ -4,7 +4,6 @@
 #include "Channel.hpp"
 
 static bool isChannelNameValid(const std::string& name);
-static std::vector<std::string> splitByComma(const std::string& str);
 static void expandChannelsAndKeys(const std::vector<std::string>& params, std::vector<std::string>& channels, std::vector<std::string>& keys);
 static bool isJoinBlocked(Server& server, Client& client, int fd, Channel* channel, const std::string& channelName, const std::string& key);
 static Channel* addClientToChannel(Server& server, Client& client, const std::string& channelName, bool isNewChannel);
@@ -149,24 +148,4 @@ static void expandChannelsAndKeys(const std::vector<std::string>& params, std::v
 	channels = splitByComma(params[0]);
 	if (params.size() >= 2)
 		keys = splitByComma(params[1]);
-}
-
-static std::vector<std::string> splitByComma(const std::string& str)
-{
-	std::vector<std::string> result;
-	std::string current;
-	for (size_t i = 0; i < str.length(); i++)
-	{
-		if (str[i] == ',')
-		{
-			if (!current.empty())
-				result.push_back(current);
-			current.clear();
-		}
-		else
-			current += str[i];
-	}
-	if (!current.empty())
-		result.push_back(current);
-	return result;
 }
