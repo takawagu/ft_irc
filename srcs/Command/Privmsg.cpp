@@ -20,7 +20,7 @@ void Privmsg::executeAction(Server& server, Client& client, int fd)
 	{
 		if (it->at(0) == '#')
 		{
-			std::string channel_name = (*it).substr(1);
+			std::string channel_name = *it;
 			sendForChannel(server, client, fd, channel_name, params()[1]);
 		}
 		else
