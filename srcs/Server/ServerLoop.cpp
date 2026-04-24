@@ -24,7 +24,7 @@ void Server::waitForEvents()
 {
 	int ready = -1;
 
-	while (ready < 0)
+	while (ready < 0 && !_stop)
 	{
 		ready = poll(&_pfds[0], _pfds.size(), -1);
 		if (ready < 0 && errno != EINTR)

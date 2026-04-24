@@ -3,6 +3,7 @@
 #include "Client.hpp"
 #include "Nick.hpp"
 #include "Channel.hpp"
+#include "CommandUtils.hpp"
 
 static void sendForChannel(Server& server, Client& client, int fd, const std::string& channel_name, std::string message);
 static void sendForTarget(Server& server, Client& client, int fd, const std::string& target, std::string message);
