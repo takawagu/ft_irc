@@ -5,6 +5,7 @@
 #include "Pass.hpp"
 #include "Nick.hpp"
 #include "User.hpp"
+#include "Privmsg.hpp"
 #include "Join.hpp"
 
 #include <iostream>
@@ -13,6 +14,7 @@ void PassTest();
 void trimTest();
 void NickTest();
 void RegisterTest();
+void PrivmsgTest();
 void JoinTest();
 
 static std::vector<std::string> makeParams()
@@ -51,7 +53,8 @@ void commandTest()
 	// PassTest();
 	// NickTest();
 	// RegisterTest();
-	JoinTest();
+	// JoinTest();
+	PrivmsgTest();
 }
 
 void PassTest(){
@@ -188,6 +191,59 @@ static void printAndFlush(Client* client, const std::string& label)
 {
 	std::cout << "[" << label << "] " << client->sendBuffer();
 	client->removeSentData(client->sendBuffer().length());
+}
+
+void PrivmsgTest()
+{
+	std::cout << "<<Privmsg test>>" << std::endl;
+	Config config("6667", "password");
+	Server server(config);
+	Client* alice = makeRegisteredClient(server, 100, "alice");
+	Client* bob = makeRegisteredClient(server, 101, "bob");
+
+	ACommand* privmsg = new Privmsg();
+
+	{
+		std::cout << "-- no params --" << std::endl;
+		privmsg->execute(server, *alice, 100, makeParams());
+		printAndFlush(alice, "461 expected");
+	}
+	{
+		std::cout << "-- no text --" << std::endl;
+		privmsg->execute(server, *alice, 100, makeParams("bob"));
+		printAndFlush(alice, "412 expected");
+	}
+	{
+		std::cout << "-- no receiver --" << std::endl;
+		privmsg->execute(server, *alice, 100, makeParams(":Hello"));
+		printAndFlush(alice, "411 expected");
+	}
+	{
+		std::cout << "-- too many receivers --" << std::endl;
+		privmsg->execute(server, *alice, 100, makeParams("bob,#general", ":Hello"));
+		printAndFlush(alice, "too many receivers");
+	}
+	{
+		std::cout << "-- non-existing user --" << std::endl;
+		privmsg->execute(server, *alice, 100, makeParams("charlie", ":Hello"));
+		printAndFlush(alice, "403 expected");
+	}
+	{
+		std::cout << "-- non-existing channel --" << std::endl;
+		privmsg->execute(server, *alice, 100, makeParams("#nonexistent", ":Hello"));
+		printAndFlush(alice, "403 expected");
+	}
+	{
+		std::cout << "-- normal channel message --" << std::endl;
+		Channel* ch = server.getOrCreateChannel("#general");
+		ch->addMember(alice);
+		privmsg->execute(server, *alice, 100, makeParams("#general", "Hello everyone!"));
+		printAndFlush(bob, "[channel] Hello everyone! expected");
+
+		// ユーザ宛 → 正常送信
+		privmsg->execute(server, *alice, 100, makeParams("bob", "Hello Bob!"));
+		printAndFlush(bob, "[private] Hello Bob! expected");
+	}
 }
 
 void JoinTest()

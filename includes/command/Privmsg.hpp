@@ -7,6 +7,8 @@ class Privmsg : public ACommand
 {
 	public:
 		void executeAction(Server& server, Client& client, int fd);
+	private:
+		bool paramsErrorCheck(Server& server, Client& client, int fd);
 };
 
 #endif
