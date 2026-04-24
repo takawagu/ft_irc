@@ -2,10 +2,11 @@
 #include "Server.hpp"
 #include "Client.hpp"
 #include "Nick.hpp"
+#include "Channel.hpp"
 
+//    Parameters: <receiver>{,<receiver>} <text to be sent>
 void Privmsg::executeAction(Server& server, Client& client, int fd)
 {
-	//    Parameters: <receiver>{,<receiver>} <text to be sent>
 	if (params().empty())
 	{
 		server.sendError(client, fd, "461", "PRIVMSG :Not enough parameters");
@@ -23,23 +24,32 @@ void Privmsg::executeAction(Server& server, Client& client, int fd)
 	}
 	if (params()[0][0] == '#')
 	{
+		std::string channel_name = params()[0].substr(1);
+		Channel* channel = server.findChannel(channel_name);
+		if (channel == NULL)
+		{
+			server.sendError(client, fd, "403", params()[0] + " :No such channel");
+			return;
+		}
+		if (!channel->hasMember(&client))
+		{
+			server.sendError(client, fd, "404", params()[0] + " :Cannot send to channel");
+			return;
+		}
+		std::string msg = ":" + client.nickname() + " PRIVMSG " + params()[0] + " :" + params()[1] + "\r\n";
+		server.broadcastToChannel(channel, msg, &client);
 		return;
 	}
-	else{
+	else
+	{
 		Client* target = server.findClientByNick(params()[0]);
-		if (target == NULL)	
+		if (target == NULL)
 		{
-			server.sendError(client, fd, "401", "nick" + params()[0] + " :No such nick/channel");
+			server.sendError(client, fd, "401", params()[0] + " :No such nick/channel");
 			return;
 		}
 		std::string msg = ":" + client.nickname() + " PRIVMSG " + params()[0] + " :" + params()[1] + "\r\n";
 		target->appendToSendBuffer(msg);
 		server.setPollout(target->fd(), true);
 	}
-	
 }
-// ERR_NORECIPIENT                 ERR_NOTEXTTOSEND
-//            ERR_CANNOTSENDTOCHAN            ERR_NOTOPLEVEL
-//            ERR_WILDTOPLEVEL                ERR_TOOMANYTARGETS
-//            ERR_NOSUCHNICK
-//            RPL_AWAY
