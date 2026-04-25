@@ -37,9 +37,7 @@ void Invite::executeAction(Server& server, Client& client, int fd)
 		server.sendError(client, fd, "443", params()[1] + " " + params()[0] + " :User is already on that channel");
 		return;
 	}
-	if (channel->isInvited(targetClient->nickname()))
-		return;
-	channel->addInvite(targetClient->nickname());
+	channel->addInvite(targetClient);
 	std::string inviteMsg = ":" + client.prefix() + " INVITE " + targetClient->nickname() + " :" + channel->name() + "\r\n";
 	targetClient->appendToSendBuffer(inviteMsg);
 	server.setPollout(targetClient->fd(), true);

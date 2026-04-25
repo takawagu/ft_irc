@@ -47,9 +47,9 @@ class Channel
 
 		bool				isInviteOnly() const;
 		void				setInviteOnly(bool val);
-		bool				isInvited(const std::string& nick) const;
-		void				addInvite(const std::string& nick);
-		void				removeInvite(const std::string& nick);
+		bool				isInvited(Client* client) const;
+		void				addInvite(Client* client);
+		void				removeInvite(Client* client);
 
 		bool				isTopicRestricted() const;
 		void				setTopicRestricted(bool val);
@@ -66,7 +66,7 @@ class Channel
 		std::string				_name;
 		Topic					_topic;
 		std::map<Client*, bool>	_members;
-		std::set<std::string>	_invited;
+		std::set<Client*>	_invited;
 		Modes					_modes;
 };
 
