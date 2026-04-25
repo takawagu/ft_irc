@@ -54,7 +54,7 @@ void commandTest()
 	// trimTest();
 	// PassTest();
 	// NickTest();
-	// RegisterTest();
+	RegisterTest();
 	// JoinTest();
 	// PrivmsgTest();
 	topicTest();
@@ -240,11 +240,11 @@ void PrivmsgTest()
 		std::cout << "-- normal channel message --" << std::endl;
 		Channel* ch = server.getOrCreateChannel("#general");
 		ch->addMember(alice);
-		privmsg->execute(server, *alice, 100, makeParams("#general", "Hello everyone!"));
+		privmsg->execute(server, *alice, 100, makeParams("#general", ":Hello everyone!"));
 		printAndFlush(bob, "[channel] Hello everyone! expected");
 
 		// ユーザ宛 → 正常送信
-		privmsg->execute(server, *alice, 100, makeParams("bob", "Hello Bob!"));
+		privmsg->execute(server, *alice, 100, makeParams("bob", ":Hello Bob!"));
 		printAndFlush(bob, "[private] Hello Bob! expected");
 	}
 }
@@ -545,9 +545,9 @@ void topicTest()
 	// チャンネル名 + 新しいトピック → トピック変更
 	{
 		std::cout << "-- channel name + new topic --" << std::endl;
-		topic->execute(server, *alice, 100, makeParams("#general", "new topic"));
-		printAndFlush(alice, "topic changed expected");
-		printAndFlush(bob, "topic changed expected");
+		topic->execute(server, *alice, 100, makeParams("#general", ":new topic"));
+		printAndFlush(alice, "topic changed expected (alice)");
+		printAndFlush(bob, "topic changed expected (bob)");
 	}
 
 	delete topic;

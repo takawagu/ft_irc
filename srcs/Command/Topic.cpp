@@ -39,7 +39,7 @@ void Topic::executeAction(Server& server, Client& client, int fd)
 			server.sendError(client, fd, "482", params()[0] + " :You're not channel operator");
 			return;
 		}
-		channel->setTopic(params()[1], client.nickname());
+		channel->setTopic(params()[1].substr(1), client.nickname());
 		std::string topicChangeMsg = ":" + client.prefix() + " TOPIC " + channel->name() + " :" + channel->topic() + "\r\n";
 		channel->broadcast(topicChangeMsg);
 	}
