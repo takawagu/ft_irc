@@ -13,6 +13,7 @@ static void skipSpaces(const std::string& line, std::string::size_type& pos);
 
 void Server::initCommandMap()
 {
+	_cmd_map["CAP"]     = new Cap();
 	_cmd_map["PASS"]    = new Pass();
 	_cmd_map["NICK"]    = new Nick();
 	_cmd_map["USER"]    = new User();
@@ -50,8 +51,8 @@ ACommand* Server::findInCmdMap(const std::string& command) const
 
 static bool isAllowedBeforeRegistration(const std::string& command)
 {
-	return command == "PASS" || command == "NICK"
-		|| command == "USER" || command == "QUIT";
+	return command == "CAP"  || command == "PASS"
+		|| command == "NICK" || command == "USER" || command == "QUIT";
 }
 
 void Server::deleteCommandMap()
