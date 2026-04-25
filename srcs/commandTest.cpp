@@ -346,9 +346,9 @@ void JoinTest()
 		alice->removeSentData(alice->sendBuffer().length());
 		Channel* ch = server.findChannel("#secret");
 		ch->setInviteOnly(true);
-		ch->addInvite("bob");
 
 		Client* bob = makeRegisteredClient(server, 101, "bob");
+		ch->addInvite(bob);
 		join->execute(server, *bob, 101, makeParams("#secret"));
 		printAndFlush(bob, "JOIN expected");
 	}
@@ -467,13 +467,13 @@ void JoinTest()
 		alice->removeSentData(alice->sendBuffer().length());
 		Channel* ch = server.findChannel("#secret");
 		ch->setInviteOnly(true);
-		ch->addInvite("bob");
 
 		Client* bob = makeRegisteredClient(server, 101, "bob");
+		ch->addInvite(bob);
 		join->execute(server, *bob, 101, makeParams("#secret"));
 		bob->removeSentData(bob->sendBuffer().length());
 
-		if (!ch->isInvited("bob"))
+		if (!ch->isInvited(bob))
 			std::cout << "[invite removed] OK: invite cleared after join" << std::endl;
 		else
 			std::cout << "[invite removed] NG: invite still present after join" << std::endl;
