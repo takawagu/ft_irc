@@ -1,5 +1,6 @@
 #include "Server.hpp"
 #include "Client.hpp"
+#include "Channel.hpp"
 
 #include <iostream>
 #include <unistd.h>
@@ -30,11 +31,23 @@ void Server::removeClient(int fd)
 	if (it == _clients.end())
 		return;
 
-	std::cout << "Client disconnected: " << it->second->hostname()
+	Client* client = it->second;
+	std::cout << "Client disconnected: " << client->hostname()
 			  << " (fd " << fd << ")" << std::endl;
 
+	const std::set<std::string> channels = client->joinedChannels();
+	for (std::set<std::string>::const_iterator ch = channels.begin(); ch != channels.end(); ++ch)
+	{
+		Channel* channel = findChannel(*ch);
+		if (channel)
+		{
+			channel->removeMember(client);
+			deleteChannelIfEmpty(*ch);
+		}
+	}
+
 	close(fd);
-	delete it->second;
+	delete client;
 	_clients.erase(it);
 	unregisterPfd(fd);
 }
