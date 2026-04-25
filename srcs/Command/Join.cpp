@@ -2,8 +2,8 @@
 #include "Server.hpp"
 #include "Client.hpp"
 #include "Channel.hpp"
+#include "CommandUtils.hpp"
 
-static bool isChannelNameValid(const std::string& name);
 static void expandChannelsAndKeys(const std::vector<std::string>& params, std::vector<std::string>& channels, std::vector<std::string>& keys);
 static bool isJoinBlocked(Server& server, Client& client, int fd, Channel* channel, const std::string& channelName, const std::string& key);
 static Channel* addClientToChannel(Server& server, Client& client, const std::string& channelName, bool isNewChannel);
@@ -129,18 +129,6 @@ static void sendNamesList(Client& client, Channel* channel, const std::string& c
 
 	std::string endOfNames = ":ircserv 366 " + client.nickname() + " " + channelName + " :End of /NAMES list\r\n";
 	client.appendToSendBuffer(endOfNames);
-}
-
-static bool isChannelNameValid(const std::string& name)
-{
-	if (name.empty() || name[0] != '#' || name.length() < 2)
-		return false;
-	for (size_t i = 1; i < name.length(); i++)
-	{
-		if (name[i] == ' ' || name[i] == ',' || name[i] == '\0')
-			return false;
-	}
-	return true;
 }
 
 static void expandChannelsAndKeys(const std::vector<std::string>& params, std::vector<std::string>& channels, std::vector<std::string>& keys)

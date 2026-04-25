@@ -22,7 +22,4 @@ class ACommand
 		std::vector<std::string> _params;
 };
 
-// utils
-std::vector<std::string> splitByComma(const std::string& str);
-
 #endif
