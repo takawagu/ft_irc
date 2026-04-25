@@ -20,7 +20,10 @@ void User::executeAction(Server& server, Client& client, int fd)
 		return;
 	}
 	client.setUsername(params()[0]);
-	client.setRealname(params()[3]);
+	std::string realname = params()[3];
+	if (!realname.empty() && realname[0] == ':')
+		realname = realname.substr(1);
+	client.setRealname(realname);
 	if (client.tryRegister())
 		server.sendWelcomeMessage(client, fd);
 }

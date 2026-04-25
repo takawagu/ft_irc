@@ -7,7 +7,11 @@ void Quit::executeAction(Server& server, Client& client, int fd)
 {
 	std::string reason = "";
 	if (!params().empty())
+	{
 		reason = params()[0];
+		if (!reason.empty() && reason[0] == ':')
+			reason = reason.substr(1);
+	}
 
 	std::string quitMsg = ":" + client.prefix() + " QUIT :" + reason + "\r\n";
 
