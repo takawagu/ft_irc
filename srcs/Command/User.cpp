@@ -2,7 +2,7 @@
 #include "Server.hpp"
 #include "Client.hpp"
 
-static void sendWelcomeMessage(Client& client);
+static void sendWelcomeMessage(Server& server, Client& client, int fd);
 
 void User::executeAction(Server& server, Client& client, int fd)
 {
@@ -19,18 +19,12 @@ void User::executeAction(Server& server, Client& client, int fd)
 	client.setUsername(params()[0]);
 	client.setRealname(params()[3]);
 	if (client.tryRegister())
-	{
-		sendWelcomeMessage(client);
-	}
-	// else
-	// {	
-	// 	server.sendError(client, fd, "451", ":You have not registered");
-	// }
-	return;
+		sendWelcomeMessage(server, client, fd);
 }
 
-static void sendWelcomeMessage(Client& client)
+static void sendWelcomeMessage(Server& server, Client& client, int fd)
 {
-	std::string welcome_msg = client.nickname() + " :Welcome to the Internet Relay Network " + client.prefix() + "\r\n";
-	client.appendToSendBuffer(welcome_msg);
+	std::string msg = ":ircserv 001 " + client.nickname() + " :Welcome to the Internet Relay Network " + client.prefix() + "\r\n";
+	client.appendToSendBuffer(msg);
+	server.setPollout(fd, true);
 }

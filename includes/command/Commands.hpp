@@ -14,5 +14,6 @@
 #include "Pong.hpp"
 #include "Quit.hpp"
 #include "Part.hpp"
+#include "Cap.hpp"
 
 #endif
