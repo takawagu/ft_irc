@@ -17,17 +17,21 @@ void Privmsg::executeAction(Server& server, Client& client, int fd)
 	std::vector<std::string> receivers;
 	receivers = splitByComma(params()[0]);
 
+	std::string message = params()[1];
+	if (!message.empty() && message[0] == ':')
+		message = message.substr(1);
+
 	for (std::vector<std::string>::iterator it = receivers.begin(); it != receivers.end(); ++it)
 	{
 		if (it->at(0) == '#')
 		{
 			std::string channel_name = *it;
-			sendForChannel(server, client, fd, channel_name, params()[1]);
+			sendForChannel(server, client, fd, channel_name, message);
 		}
 		else
 		{
-			sendForTarget(server, client, fd, *it, params()[1]);
-		}	
+			sendForTarget(server, client, fd, *it, message);
+		}
 	}
 	return;
 }
