@@ -15,6 +15,7 @@ void PassTest();
 void trimTest();
 void NickTest();
 void RegisterTest();
+void UserTest();
 void PrivmsgTest();
 void JoinTest();
 void topicTest();
@@ -54,10 +55,11 @@ void commandTest()
 	// trimTest();
 	// PassTest();
 	// NickTest();
-	RegisterTest();
+	// RegisterTest();
+	UserTest();
 	// JoinTest();
 	// PrivmsgTest();
-	topicTest();
+	// topicTest();
 }
 
 void PassTest(){
@@ -194,6 +196,138 @@ static void printAndFlush(Client* client, const std::string& label)
 {
 	std::cout << "[" << label << "] " << client->sendBuffer();
 	client->removeSentData(client->sendBuffer().length());
+}
+
+void UserTest()
+{
+	std::cout << "<<User test>>" << std::endl;
+	Config config("6667", "password");
+
+	// 461: パラメータ不足
+	{
+		std::cout << "-- not enough params (461 expected) --" << std::endl;
+		Server server(config);
+		Client* client = new Client(0, "localhost");
+		ACommand* user = new User();
+		user->execute(server, *client, 0, makeParams("user1", "0"));
+		std::cout << client->sendBuffer();
+		client->removeSentData(client->sendBuffer().length());
+		delete user;
+	}
+
+	// 462: 登録済みに再送 → ERR_ALREADYREGISTERED
+	{
+		std::cout << "-- already registered (462 expected) --" << std::endl;
+		Server server(config);
+		Client* client = makeRegisteredClient(server, 0, "alice");
+		ACommand* user = new User();
+		user->execute(server, *client, 0, makeParams("other", "0", "*", ":Other Name"));
+		std::cout << client->sendBuffer();
+		client->removeSentData(client->sendBuffer().length());
+		delete user;
+	}
+
+	// 468: 無効なusername（@を含む）
+	{
+		std::cout << "-- invalid username with @ (468 expected) --" << std::endl;
+		Server server(config);
+		Client* client = new Client(0, "localhost");
+		ACommand* user = new User();
+		user->execute(server, *client, 0, makeParams("bad@name", "0", "*", ":Real"));
+		std::cout << client->sendBuffer();
+		client->removeSentData(client->sendBuffer().length());
+		delete user;
+	}
+
+	// 468: 無効なusername（スペースを含む）
+	{
+		std::cout << "-- invalid username with space (468 expected) --" << std::endl;
+		Server server(config);
+		Client* client = new Client(0, "localhost");
+		ACommand* user = new User();
+		user->execute(server, *client, 0, makeParams("bad name", "0", "*", ":Real"));
+		std::cout << client->sendBuffer();
+		client->removeSentData(client->sendBuffer().length());
+		delete user;
+	}
+
+	// PASS→USER→NICK の順で welcome が届く
+	{
+		std::cout << "-- PASS->USER->NICK order (001 expected on NICK) --" << std::endl;
+		Server server(config);
+		Client* client = new Client(0, "localhost");
+		server.addClient(0, client);
+
+		ACommand* pass = new Pass();
+		pass->execute(server, *client, 0, makeParams("password"));
+		client->removeSentData(client->sendBuffer().length());
+		delete pass;
+
+		ACommand* user = new User();
+		user->execute(server, *client, 0, makeParams("tomo", "0", "*", ":Tomo Ka"));
+		std::string after_user = client->sendBuffer();
+		client->removeSentData(after_user.length());
+		if (after_user.empty())
+			std::cout << "[USER before NICK] OK: no welcome yet" << std::endl;
+		else
+			std::cout << "[USER before NICK] NG: unexpected reply: " << after_user;
+		delete user;
+
+		ACommand* nick = new Nick();
+		nick->execute(server, *client, 0, makeParams("tochi"));
+		std::string after_nick = client->sendBuffer();
+		client->removeSentData(after_nick.length());
+		if (after_nick.find("001") != std::string::npos)
+			std::cout << "[NICK completes reg] OK: 001 received" << std::endl;
+		else
+			std::cout << "[NICK completes reg] NG: 001 not received: " << after_nick;
+		delete nick;
+	}
+
+	// PASSなしで NICK+USER → 登録されない（welcome なし）
+	{
+		std::cout << "-- no PASS, NICK+USER -> no welcome --" << std::endl;
+		Server server(config);
+		Client* client = new Client(0, "localhost");
+		server.addClient(0, client);
+
+		ACommand* nick = new Nick();
+		nick->execute(server, *client, 0, makeParams("tochi"));
+		client->removeSentData(client->sendBuffer().length());
+		delete nick;
+
+		ACommand* user = new User();
+		user->execute(server, *client, 0, makeParams("tomo", "0", "*", ":Tomo Ka"));
+		std::string buf = client->sendBuffer();
+		client->removeSentData(buf.length());
+		if (buf.find("001") == std::string::npos)
+			std::cout << "[no PASS] OK: no welcome sent" << std::endl;
+		else
+			std::cout << "[no PASS] NG: got unexpected 001" << std::endl;
+		delete user;
+	}
+
+	// PASS+NICK のみ（USER未送信）→ 登録されない
+	{
+		std::cout << "-- PASS+NICK only, no USER -> not registered --" << std::endl;
+		Server server(config);
+		Client* client = new Client(0, "localhost");
+		server.addClient(0, client);
+
+		ACommand* pass = new Pass();
+		pass->execute(server, *client, 0, makeParams("password"));
+		client->removeSentData(client->sendBuffer().length());
+		delete pass;
+
+		ACommand* nick = new Nick();
+		nick->execute(server, *client, 0, makeParams("tochi"));
+		client->removeSentData(client->sendBuffer().length());
+		if (!client->isRegistered())
+			std::cout << "[no USER] OK: not registered" << std::endl;
+		else
+			std::cout << "[no USER] NG: registered without USER" << std::endl;
+		delete nick;
+	}
 }
 
 void PrivmsgTest()

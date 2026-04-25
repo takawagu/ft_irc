@@ -23,7 +23,15 @@ void Nick::executeAction(Server& server, Client& client, int fd)
 	client.setNickname(params()[0]);
 	client.appendToSendBuffer(":" + old_nick + " NICK " + client.nickname() + "\r\n");
 	server.setPollout(fd, true);
-	client.tryRegister();
+	if (client.tryRegister())
+	{
+		const std::string& nick = client.nickname();
+		client.appendToSendBuffer(":ircserv 001 " + nick + " :Welcome to the Internet Relay Network " + client.prefix() + "\r\n");
+		client.appendToSendBuffer(":ircserv 002 " + nick + " :Your host is ircserv, running version 1.0\r\n");
+		client.appendToSendBuffer(":ircserv 003 " + nick + " :This server was created sometime\r\n");
+		client.appendToSendBuffer(":ircserv 004 " + nick + " ircserv 1.0 o itkol\r\n");
+		client.appendToSendBuffer(":ircserv 422 " + nick + " :MOTD File is missing\r\n");
+	}
 }
 
 static bool isNicknameSymbol(char c);
