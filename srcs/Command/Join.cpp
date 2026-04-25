@@ -56,7 +56,7 @@ static bool isJoinBlocked(Server& server, Client& client, int fd, Channel* chann
 {
 	if (channel->hasMember(&client))
 		return true;
-	if (channel->isInviteOnly() && !channel->isInvited(client.nickname()))
+	if (channel->isInviteOnly() && !channel->isInvited(&client))
 	{
 		server.sendError(client, fd, "473", channelName + " :Cannot join channel (+i)");
 		return true;
@@ -79,8 +79,8 @@ static Channel* addClientToChannel(Server& server, Client& client, const std::st
 	Channel* channel = server.getOrCreateChannel(channelName);
 	channel->addMember(&client, isNewChannel);
 	client.joinChannel(channelName);
-	if (channel->isInvited(client.nickname()))
-		channel->removeInvite(client.nickname());
+	if (channel->isInvited(&client))
+		channel->removeInvite(&client);
 	return channel;
 }
 

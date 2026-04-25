@@ -3,13 +3,13 @@
 bool Channel::isInviteOnly() const          { return _modes.invite_only; }
 void Channel::setInviteOnly(bool val)       { _modes.invite_only = val; }
 
-bool Channel::isInvited(const std::string& nick) const
+bool Channel::isInvited(Client* client) const
 {
-	return _invited.find(nick) != _invited.end();
+	return _invited.find(client) != _invited.end();
 }
 
-void Channel::addInvite(const std::string& nick)    { _invited.insert(nick); }
-void Channel::removeInvite(const std::string& nick) { _invited.erase(nick); }
+void Channel::addInvite(Client* client)    { _invited.insert(client); }
+void Channel::removeInvite(Client* client) { _invited.erase(client); }
 
 bool Channel::isTopicRestricted() const     { return _modes.topic_restricted; }
 void Channel::setTopicRestricted(bool val)  { _modes.topic_restricted = val; }
