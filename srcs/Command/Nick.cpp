@@ -23,7 +23,8 @@ void Nick::executeAction(Server& server, Client& client, int fd)
 	client.setNickname(params()[0]);
 	client.appendToSendBuffer(":" + old_nick + " NICK " + client.nickname() + "\r\n");
 	server.setPollout(fd, true);
-	client.tryRegister();
+	if (client.tryRegister())
+		server.sendWelcomeMessage(client, fd);
 }
 
 static bool isNicknameSymbol(char c);
