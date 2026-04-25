@@ -159,7 +159,7 @@ void RegisterTest(){
 	client->removeSentData(client->sendBuffer().length());
 
 	ACommand* user_cmd = new User();
-	user_cmd->execute(server, *client, 0, makeParams("tomo", "0", "*", "Tomo Ka"));
+	user_cmd->execute(server, *client, 0, makeParams("tomo", "0", "*", ":Tomo Ka"));
 	std::cout << client->sendBuffer() << std::endl;
 	client->removeSentData(client->sendBuffer().length());
 }
@@ -180,7 +180,7 @@ static Client* makeRegisteredClient(Server& server, int fd, const std::string& n
 	delete nick_cmd;
 
 	ACommand* user_cmd = new User();
-	user_cmd->execute(server, *client, fd, makeParams("user1", "0", "*", "Real Name"));
+	user_cmd->execute(server, *client, fd, makeParams("user1", "0", "*", ":Real Name"));
 	client->removeSentData(client->sendBuffer().length());
 	delete user_cmd;
 
@@ -237,11 +237,11 @@ void PrivmsgTest()
 		std::cout << "-- normal channel message --" << std::endl;
 		Channel* ch = server.getOrCreateChannel("#general");
 		ch->addMember(alice);
-		privmsg->execute(server, *alice, 100, makeParams("#general", "Hello everyone!"));
+		privmsg->execute(server, *alice, 100, makeParams("#general", ":Hello everyone!"));
 		printAndFlush(bob, "[channel] Hello everyone! expected");
 
 		// ユーザ宛 → 正常送信
-		privmsg->execute(server, *alice, 100, makeParams("bob", "Hello Bob!"));
+		privmsg->execute(server, *alice, 100, makeParams("bob", ":Hello Bob!"));
 		printAndFlush(bob, "[private] Hello Bob! expected");
 	}
 }

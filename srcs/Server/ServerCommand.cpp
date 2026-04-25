@@ -101,7 +101,7 @@ static void parseParams(const std::string& line, std::string::size_type pos, std
 
 		if (line[pos] == ':')
 		{
-			params.push_back(line.substr(pos + 1));
+			params.push_back(line.substr(pos));
 			break;
 		}
 
