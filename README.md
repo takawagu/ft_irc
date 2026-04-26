@@ -19,8 +19,8 @@ The server:
 - Aggregates partial TCP packets and rebuilds complete IRC commands before
   executing them.
 - Implements authentication (`PASS`), nickname/username registration (`NICK`,
-  `USER`), private messages (`PRIVMSG`), channel join (`JOIN`), and channel
-  broadcasting.
+  `USER`), private messages (`PRIVMSG`), channel join/leave (`JOIN`, `PART`),
+  channel broadcasting, and graceful disconnection (`QUIT`).
 - Distinguishes between **regular users** and **channel operators**, and
   supports the operator-only commands `KICK`, `INVITE`, `TOPIC`, and `MODE`
   (`i`, `t`, `k`, `o`, `l`).
@@ -96,11 +96,13 @@ Once connected, classic IRC commands can be used:
 
 ```
 /join #channel
+/part #channel
 /msg <nick> hello
 /topic #channel new topic
 /mode #channel +i
 /kick #channel <nick>
 /invite <nick> #channel
+/quit
 ```
 
 ## Resources

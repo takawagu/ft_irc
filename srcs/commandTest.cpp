@@ -10,6 +10,7 @@
 #include "Topic.hpp"
 #include "Kick.hpp"
 #include "Part.hpp"
+#include "Mode.hpp"
 
 #include <iostream>
 
@@ -23,6 +24,7 @@ void JoinTest();
 void topicTest();
 void kickTest();
 void partTest();
+void modeTest();
 
 static std::vector<std::string> makeParams()
 {
@@ -41,6 +43,15 @@ static std::vector<std::string> makeParams(const std::string& a, const std::stri
 	std::vector<std::string> v;
 	v.push_back(a);
 	v.push_back(b);
+	return v;
+}
+
+static std::vector<std::string> makeParams(const std::string& a, const std::string& b, const std::string& c)
+{
+	std::vector<std::string> v;
+	v.push_back(a);
+	v.push_back(b);
+	v.push_back(c);
 	return v;
 }
 
@@ -65,7 +76,8 @@ void commandTest()
 	// PrivmsgTest();
 	// topicTest();
 	// kickTest();
-	partTest();
+	// partTest();
+	modeTest();
 }
 
 void PassTest(){
@@ -767,6 +779,7 @@ void kickTest()
 	delete kick;
 }
 
+
 void partTest()
 {
 	std::cout << "<<Part test>>" << std::endl;
@@ -826,6 +839,228 @@ void partTest()
 
 	delete part;
 }
+
+void modeTest()
+{
+	std::cout << "<<Mode test>>" << std::endl;
+	Config config("6667", "password");
+	ACommand* mode = new Mode();
+
+	// パラメータなし → 461
+	{
+		std::cout << "-- no params --" << std::endl;
+		Server server(config);
+		Client* alice = makeRegisteredClient(server, 100, "alice");
+		mode->execute(server, *alice, 100, makeParams());
+		printAndFlush(alice, "461 expected");
+	}
+
+	// 存在しないチャンネル → 403
+	{
+		std::cout << "-- no such channel --" << std::endl;
+		Server server(config);
+		Client* alice = makeRegisteredClient(server, 100, "alice");
+		mode->execute(server, *alice, 100, makeParams("#none"));
+		printAndFlush(alice, "403 expected");
+	}
+
+	// チャンネル名のみ → 324 現在のモード表示
+	{
+		std::cout << "-- channel name only (324 expected) --" << std::endl;
+		Server server(config);
+		Client* alice = makeRegisteredClient(server, 100, "alice");
+		Channel* ch = server.getOrCreateChannel("#general");
+		ch->addMember(alice);
+		mode->execute(server, *alice, 100, makeParams("#general"));
+		printAndFlush(alice, "324 expected");
+	}
+
+	// チャンネルのメンバーでない → 442
+	{
+		std::cout << "-- not on channel --" << std::endl;
+		Server server(config);
+		Client* alice = makeRegisteredClient(server, 100, "alice");
+		Client* bob = makeRegisteredClient(server, 101, "bob");
+		Channel* ch = server.getOrCreateChannel("#general");
+		ch->addMember(alice);
+		mode->execute(server, *bob, 101, makeParams("#general", "+i"));
+		printAndFlush(bob, "442 expected");
+	}
+
+	// オペレーターでない → 482
+	{
+		std::cout << "-- not operator --" << std::endl;
+		Server server(config);
+		Client* alice = makeRegisteredClient(server, 100, "alice");
+		Client* bob = makeRegisteredClient(server, 101, "bob");
+		Channel* ch = server.getOrCreateChannel("#general");
+		ch->addMember(alice);
+		ch->addMember(bob);
+		mode->execute(server, *bob, 101, makeParams("#general", "+i"));
+		printAndFlush(bob, "482 expected");
+	}
+
+	// +i / -i (invite-only)
+	{
+		std::cout << "-- +i / -i --" << std::endl;
+		Server server(config);
+		Client* alice = makeRegisteredClient(server, 100, "alice");
+		Channel* ch = server.getOrCreateChannel("#general");
+		ch->addMember(alice, true);
+		mode->execute(server, *alice, 100, makeParams("#general", "+i"));
+		printAndFlush(alice, "+i broadcast expected");
+		mode->execute(server, *alice, 100, makeParams("#general", "-i"));
+		printAndFlush(alice, "-i broadcast expected");
+		mode->execute(server, *alice, 100, makeParams("#general", "-i"));
+		printAndFlush(alice, "-i broadcast expected");
+	}
+
+	// +t / -t (topic restricted)
+	{
+		std::cout << "-- +t / -t --" << std::endl;
+		Server server(config);
+		Client* alice = makeRegisteredClient(server, 100, "alice");
+		Channel* ch = server.getOrCreateChannel("#general");
+		ch->addMember(alice, true);
+		mode->execute(server, *alice, 100, makeParams("#general", "+t"));
+		printAndFlush(alice, "+t broadcast expected");
+		mode->execute(server, *alice, 100, makeParams("#general", "-t"));
+		printAndFlush(alice, "-t broadcast expected");
+	}
+
+	// +k (key設定) / -k (key解除)
+	{
+		std::cout << "-- +k / -k --" << std::endl;
+		Server server(config);
+		Client* alice = makeRegisteredClient(server, 100, "alice");
+		Channel* ch = server.getOrCreateChannel("#general");
+		ch->addMember(alice, true);
+		mode->execute(server, *alice, 100, makeParams("#general", "+k", "secret"));
+		printAndFlush(alice, "+k secret broadcast expected");
+		mode->execute(server, *alice, 100, makeParams("#general", "-k"));
+		printAndFlush(alice, "-k * broadcast expected");
+	}
+
+	// +k パラメータなし → 461
+	{
+		std::cout << "-- +k no param --" << std::endl;
+		Server server(config);
+		Client* alice = makeRegisteredClient(server, 100, "alice");
+		Channel* ch = server.getOrCreateChannel("#general");
+		ch->addMember(alice, true);
+		mode->execute(server, *alice, 100, makeParams("#general", "+k"));
+		printAndFlush(alice, "461 expected");
+	}
+
+	// +l (user limit) / -l (解除)
+	{
+		std::cout << "-- +l / -l --" << std::endl;
+		Server server(config);
+		Client* alice = makeRegisteredClient(server, 100, "alice");
+		Channel* ch = server.getOrCreateChannel("#general");
+		ch->addMember(alice, true);
+		mode->execute(server, *alice, 100, makeParams("#general", "+l", "5"));
+		printAndFlush(alice, "+l 5 broadcast expected");
+		mode->execute(server, *alice, 100, makeParams("#general", "+l", "0"));
+		printAndFlush(alice, "+l 0 broadcast expected");
+		mode->execute(server, *alice, 100, makeParams("#general", "-l"));
+		printAndFlush(alice, "-l broadcast expected");
+	}
+
+	// +o (operator付与) / -o (剥奪)
+	{
+		std::cout << "-- +o / -o --" << std::endl;
+		Server server(config);
+		Client* alice = makeRegisteredClient(server, 100, "alice");
+		Client* bob = makeRegisteredClient(server, 101, "bob");
+		Channel* ch = server.getOrCreateChannel("#general");
+		ch->addMember(alice, true);
+		ch->addMember(bob);
+		mode->execute(server, *alice, 100, makeParams("#general", "+o", "bob"));
+		printAndFlush(alice, "+o bob broadcast expected");
+		mode->execute(server, *alice, 100, makeParams("#general", "-o", "bob"));
+		printAndFlush(alice, "-o bob broadcast expected");
+	}
+
+	// +o チャンネルにいないユーザー → 441
+	{
+		std::cout << "-- +o target not in channel --" << std::endl;
+		Server server(config);
+		Client* alice = makeRegisteredClient(server, 100, "alice");
+		Client* bob = makeRegisteredClient(server, 101, "bob");
+		(void)bob;
+		Channel* ch = server.getOrCreateChannel("#general");
+		ch->addMember(alice, true);
+		mode->execute(server, *alice, 100, makeParams("#general", "+o", "bob"));
+		printAndFlush(alice, "441 expected");
+	}
+
+	// 不明なモード文字 → 472
+	{
+		std::cout << "-- unknown mode char --" << std::endl;
+		Server server(config);
+		Client* alice = makeRegisteredClient(server, 100, "alice");
+		Channel* ch = server.getOrCreateChannel("#general");
+		ch->addMember(alice, true);
+		mode->execute(server, *alice, 100, makeParams("#general", "+z"));
+		printAndFlush(alice, "472 expected");
+	}
+
+	// 複合モード +ik
+	{
+		std::cout << "-- combined +ik --" << std::endl;
+		Server server(config);
+		Client* alice = makeRegisteredClient(server, 100, "alice");
+		Channel* ch = server.getOrCreateChannel("#general");
+		ch->addMember(alice, true);
+		mode->execute(server, *alice, 100, makeParams("#general", "+ik", "secret"));
+		printAndFlush(alice, "+ik secret broadcast expected");
+	}
+
+	// 複合モード +ik エラーケース
+	{
+		std::cout << "-- combined +ik --" << std::endl;
+		Server server(config);
+		Client* alice = makeRegisteredClient(server, 100, "alice");
+		Channel* ch = server.getOrCreateChannel("#general");
+		ch->addMember(alice, true);
+		mode->execute(server, *alice, 100, makeParams("#general"));
+		printAndFlush(alice, "before +ik: 461 expected");
+		mode->execute(server, *alice, 100, makeParams("#general", "+ik"));
+		printAndFlush(alice, "461 expected");
+		mode->execute(server, *alice, 100, makeParams("#general"));
+		printAndFlush(alice, "after +ik: 461 expected");
+	}
+
+	// 複合モード +i-k (符号切り替え)
+	{
+		std::cout << "-- combined +i-k --" << std::endl;
+		Server server(config);
+		Client* alice = makeRegisteredClient(server, 100, "alice");
+		Channel* ch = server.getOrCreateChannel("#general");
+		ch->addMember(alice, true);
+		ch->setKey("secret");
+		mode->execute(server, *alice, 100, makeParams("#general", "+i-k"));
+		printAndFlush(alice, "+i-k * broadcast expected");
+	}
+
+	// 複合モード +io-ks (符号切り替え)
+	{
+		std::cout << "-- combined +io-ks --" << std::endl;
+		Server server(config);
+		Client* alice = makeRegisteredClient(server, 100, "alice");
+		Client* bob = makeRegisteredClient(server, 101, "bob");
+		Channel* ch = server.getOrCreateChannel("#general");
+		ch->addMember(alice, true);
+		ch->addMember(bob);
+		ch->setKey("secret");
+		mode->execute(server, *alice, 100, makeParams("#general", "+i-k+o","bob"));
+		printAndFlush(alice, "+i-k * broadcast expected");
+	}
+
+	delete mode;
+}
+
 
 void trimTest(){
 	std::cout << "trim test" << std::endl;
