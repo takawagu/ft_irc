@@ -23,8 +23,6 @@ void Server::initCommandMap()
 	_cmd_map["INVITE"]  = new Invite();
 	_cmd_map["TOPIC"]   = new Topic();
 	_cmd_map["MODE"]    = new Mode();
-	_cmd_map["PING"]    = new Ping();
-	_cmd_map["PONG"]    = new Pong();
 	_cmd_map["QUIT"]    = new Quit();
 	_cmd_map["PART"]    = new Part();
 }

@@ -10,8 +10,6 @@
 #include "Invite.hpp"
 #include "Topic.hpp"
 #include "Mode.hpp"
-#include "Ping.hpp"
-#include "Pong.hpp"
 #include "Quit.hpp"
 #include "Part.hpp"
 #include "Cap.hpp"
