@@ -8,6 +8,7 @@
 #include "Privmsg.hpp"
 #include "Join.hpp"
 #include "Topic.hpp"
+#include "Kick.hpp"
 
 #include <iostream>
 
@@ -19,6 +20,7 @@ void UserTest();
 void PrivmsgTest();
 void JoinTest();
 void topicTest();
+void kickTest();
 
 static std::vector<std::string> makeParams()
 {
@@ -56,10 +58,11 @@ void commandTest()
 	// PassTest();
 	// NickTest();
 	// RegisterTest();
-	UserTest();
+	// UserTest();
 	// JoinTest();
 	// PrivmsgTest();
 	// topicTest();
+	kickTest();
 }
 
 void PassTest(){
@@ -685,6 +688,80 @@ void topicTest()
 	}
 
 	delete topic;
+}
+
+void kickTest()
+{
+	std::cout << "<<Kick test>>" << std::endl;
+	Config config("6667", "password");
+	Server server(config);
+	Client* alice = makeRegisteredClient(server, 100, "alice");
+	Client* bob = makeRegisteredClient(server, 101, "bob");
+
+	Channel* ch = server.getOrCreateChannel("#general");
+	ch->addMember(alice);
+	ch->setOperator(alice, true);
+	ch->addMember(bob);
+
+	ACommand* kick = new Kick();
+
+	// パラメータなし → 461 Not enough parameters
+	{
+		std::cout << "-- no params --" << std::endl;
+		kick->execute(server, *alice, 100, makeParams());
+		printAndFlush(alice, "461 expected");
+	}
+
+	// チャンネル名のみ → 461 Not enough parameters
+	{
+		std::cout << "-- channel name only --" << std::endl;
+		kick->execute(server, *alice, 100, makeParams("#general"));
+		printAndFlush(alice, "461 expected");
+	}
+
+	// 存在しないUser名 → 401 No such nick/channel
+	{
+		std::cout << "-- user not in channel --" << std::endl;
+		kick->execute(server, *alice, 100, makeParams("#general", "tomo"));
+		printAndFlush(alice, "401 expected");
+	}
+
+	// 存在しないチャンネル
+	{
+		std::cout << "-- no such channel --" << std::endl;
+		kick->execute(server, *alice, 100, makeParams("#normal", "tomo"));
+		printAndFlush(alice, "403 expected");
+	}
+
+	// 権限がない
+	{
+		std::cout << "-- no permission --" << std::endl;
+		kick->execute(server, *bob, 100, makeParams("#general", "alice"));
+		printAndFlush(bob, "482 expected");
+	}
+
+	// チャンネル名 + ユーザ名 → 正常キック
+	{
+		std::cout << "-- channel name + user name --" << std::endl;
+		kick->execute(server, *alice, 100, makeParams("#general", "bob"));
+		printAndFlush(alice, "kick successful expected (alice)");
+		printAndFlush(bob, "kick received expected (bob)");
+	}
+
+	// チャンネルに存在しない
+	{
+		std::cout << "-- no exitst user in channel --" << std::endl;
+		kick->execute(server, *alice, 100, makeParams("#general", "bob"));
+		printAndFlush(alice, "441 expected");
+	}
+
+	//自分自身もキックできる
+	{
+		std::cout << "-- kick self --" << std::endl;
+		kick->execute(server, *alice, 100, makeParams("#general", "alice"));
+		printAndFlush(alice, "kick self expected");
+	}
+	delete kick;
 }
 
 void trimTest(){
