@@ -9,6 +9,7 @@
 #include "Join.hpp"
 #include "Topic.hpp"
 #include "Kick.hpp"
+#include "Part.hpp"
 
 #include <iostream>
 
@@ -21,6 +22,7 @@ void PrivmsgTest();
 void JoinTest();
 void topicTest();
 void kickTest();
+void partTest();
 
 static std::vector<std::string> makeParams()
 {
@@ -62,7 +64,8 @@ void commandTest()
 	// JoinTest();
 	// PrivmsgTest();
 	// topicTest();
-	kickTest();
+	// kickTest();
+	partTest();
 }
 
 void PassTest(){
@@ -762,6 +765,66 @@ void kickTest()
 		printAndFlush(alice, "kick self expected");
 	}
 	delete kick;
+}
+
+void partTest()
+{
+	std::cout << "<<Part test>>" << std::endl;
+	Config config("6667", "password");
+	Server server(config);
+	Client* alice = makeRegisteredClient(server, 100, "alice");
+	Client* bob = makeRegisteredClient(server, 101, "bob");
+
+	Channel* ch = server.getOrCreateChannel("#general");
+	ch->addMember(alice);
+	ch->addMember(bob);
+
+	ACommand* part = new Part();
+
+	// パラメータなし → 461 Not enough parameters
+	{
+		std::cout << "-- no params --" << std::endl;
+		part->execute(server, *alice, 100, makeParams());
+		printAndFlush(alice, "461 expected");
+	}
+
+	// チャンネルなし → 461 Not enough parameters
+	{
+		std::cout << "-- no params --" << std::endl;
+		part->execute(server, *alice, 100, makeParams(":bye"));
+		printAndFlush(alice, "461 expected");
+	}
+
+	// 存在しないチャンネル → 403 No such channel
+	{
+		std::cout << "-- no such channel --" << std::endl;
+		part->execute(server, *alice, 100, makeParams("#normal"));
+		printAndFlush(alice, "403 expected");
+	}
+
+	// チャンネル名 → 正常PART
+	{
+		std::cout << "-- channel name --" << std::endl;
+		part->execute(server, *alice, 100, makeParams("#general"));
+		printAndFlush(alice, "part successful expected (alice)");
+		printAndFlush(bob, "part received expected (bob)");
+	}
+
+	// チャンネル名 → 正常PART
+	{
+		std::cout << "-- channel name --" << std::endl;
+		part->execute(server, *bob, 100, makeParams("#general", ":bye"));
+		printAndFlush(bob, "part received expected (bob)");
+	}
+
+	// チャンネルにいない　-> 442 Not on channel
+	{
+		std::cout << std::endl << "-- not on channel --" << std::endl;
+		part->execute(server, *alice, 100, makeParams("#general"));
+		printAndFlush(alice, "442 expected");
+	}
+
+	delete part;
 }
 
 void trimTest(){
