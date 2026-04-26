@@ -42,9 +42,9 @@ void Kick::executeAction(Server& server, Client& client, int fd)
 	}
 	std::string kickMsg;
 	if (params().size() == 2)
-		kickMsg = ":" + client.prefix() + " KICK " + channel->name() + " " + targetClient->nickname();
+		kickMsg = ":" + client.prefix() + " KICK " + channel->name() + " " + targetClient->nickname() + "\r\n";
 	else
-		kickMsg = ":" + client.prefix() + " KICK " + channel->name() + " " + targetClient->nickname() + " :" + params()[2];
+		kickMsg = ":" + client.prefix() + " KICK " + channel->name() + " " + targetClient->nickname() + " :" + params()[2] + "\r\n";
 	server.broadcastToChannel(channel, kickMsg);
 	channel->removeMember(targetClient);
 	server.deleteChannelIfEmpty(channel->name());
