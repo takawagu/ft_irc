@@ -40,11 +40,11 @@ void Kick::executeAction(Server& server, Client& client, int fd)
 		server.sendError(client, fd, "441", params()[1] + " " + params()[0] + " :They aren't on that channel");
 		return;
 	}
-	channel->removeMember(targetClient);
 	std::string kickMsg;
 	if (params().size() == 2)
 		kickMsg = ":" + client.prefix() + " KICK " + channel->name() + " " + targetClient->nickname();
 	else
 		kickMsg = ":" + client.prefix() + " KICK " + channel->name() + " " + targetClient->nickname() + " :" + params()[2];
 	server.broadcastToChannel(channel, kickMsg);
+	channel->removeMember(targetClient);
 }
