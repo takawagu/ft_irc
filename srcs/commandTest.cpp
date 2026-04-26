@@ -911,6 +911,8 @@ void modeTest()
 		printAndFlush(alice, "+i broadcast expected");
 		mode->execute(server, *alice, 100, makeParams("#general", "-i"));
 		printAndFlush(alice, "-i broadcast expected");
+		mode->execute(server, *alice, 100, makeParams("#general", "-i"));
+		printAndFlush(alice, "-i broadcast expected");
 	}
 
 	// +t / -t (topic restricted)
@@ -959,6 +961,8 @@ void modeTest()
 		ch->addMember(alice, true);
 		mode->execute(server, *alice, 100, makeParams("#general", "+l", "5"));
 		printAndFlush(alice, "+l 5 broadcast expected");
+		mode->execute(server, *alice, 100, makeParams("#general", "+l", "0"));
+		printAndFlush(alice, "+l 0 broadcast expected");
 		mode->execute(server, *alice, 100, makeParams("#general", "-l"));
 		printAndFlush(alice, "-l broadcast expected");
 	}
@@ -1013,6 +1017,21 @@ void modeTest()
 		printAndFlush(alice, "+ik secret broadcast expected");
 	}
 
+	// 複合モード +ik エラーケース
+	{
+		std::cout << "-- combined +ik --" << std::endl;
+		Server server(config);
+		Client* alice = makeRegisteredClient(server, 100, "alice");
+		Channel* ch = server.getOrCreateChannel("#general");
+		ch->addMember(alice, true);
+		mode->execute(server, *alice, 100, makeParams("#general"));
+		printAndFlush(alice, "before +ik: 461 expected");
+		mode->execute(server, *alice, 100, makeParams("#general", "+ik"));
+		printAndFlush(alice, "461 expected");
+		mode->execute(server, *alice, 100, makeParams("#general"));
+		printAndFlush(alice, "after +ik: 461 expected");
+	}
+
 	// 複合モード +i-k (符号切り替え)
 	{
 		std::cout << "-- combined +i-k --" << std::endl;
@@ -1022,6 +1041,20 @@ void modeTest()
 		ch->addMember(alice, true);
 		ch->setKey("secret");
 		mode->execute(server, *alice, 100, makeParams("#general", "+i-k"));
+		printAndFlush(alice, "+i-k * broadcast expected");
+	}
+
+	// 複合モード +io-ks (符号切り替え)
+	{
+		std::cout << "-- combined +io-ks --" << std::endl;
+		Server server(config);
+		Client* alice = makeRegisteredClient(server, 100, "alice");
+		Client* bob = makeRegisteredClient(server, 101, "bob");
+		Channel* ch = server.getOrCreateChannel("#general");
+		ch->addMember(alice, true);
+		ch->addMember(bob);
+		ch->setKey("secret");
+		mode->execute(server, *alice, 100, makeParams("#general", "+i-k+o","bob"));
 		printAndFlush(alice, "+i-k * broadcast expected");
 	}
 

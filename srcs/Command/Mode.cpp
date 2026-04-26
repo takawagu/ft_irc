@@ -97,7 +97,7 @@ void Mode::applyModes(Server& server, Client& client, int fd, Channel* channel,
 		ModeResult result = dispatchMode(server, client, fd, channel, c, ctx);
 
 		if (result == MODE_STOP)
-			return;
+			break;
 		if (result == MODE_SKIP)
 			continue;
 		appendAppliedMode(c, ctx);
@@ -157,8 +157,6 @@ Mode::ModeResult Mode::applyModeK(Server& server, Client& client, int fd, Channe
 		if (!ctx.broadcast.replyParams.empty())
 			ctx.broadcast.replyParams += " ";
 		ctx.broadcast.replyParams += "*";
-		if (ctx.paramIndex < ctx.modeParams.size())
-			ctx.paramIndex++;
 	}
 	return MODE_APPLIED;
 }
