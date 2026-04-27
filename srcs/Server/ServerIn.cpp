@@ -1,7 +1,6 @@
 #include "Server.hpp"
 #include "Client.hpp"
 
-#include <cerrno>
 #include <sys/socket.h>
 
 static const std::size_t RECV_BUF_SIZE = 4096;
@@ -33,9 +32,7 @@ bool Server::isRecvSuccessful(ssize_t bytesReceived, int fd)
 
 	if (recvError)
 	{
-		bool unrecoverableError = (errno != EAGAIN && errno != EWOULDBLOCK);
-		if (unrecoverableError)
-			addToDisconnectList(fd);
+		addToDisconnectList(fd);
 		return false;
 	}
 	if (connectionClosed)
