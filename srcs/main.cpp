@@ -29,6 +29,6 @@ int main(int argc, char** argv)
 	ircserv(argc, argv);
 	// (void)argc;
 	// (void)argv;
-	commandTest();
+	// commandTest();
 	return 0;
 }
