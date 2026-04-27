@@ -1,6 +1,5 @@
 #include "Server.hpp"
 
-#include <cerrno>
 #include <cstring>
 #include <stdexcept>
 
@@ -22,14 +21,9 @@ void Server::loop()
 
 void Server::waitForEvents()
 {
-	int ready = -1;
-
-	while (ready < 0 && !_stop)
-	{
-		ready = poll(&_pfds[0], _pfds.size(), -1);
-		if (ready < 0 && errno != EINTR)
-			throw std::runtime_error("poll: " + std::string(std::strerror(errno)));
-	}
+	int ready = poll(&_pfds[0], _pfds.size(), -1);
+	if (ready < 0 && !_stop)
+		throw std::runtime_error("poll failed");
 }
 
 void Server::handlePollEvents()

@@ -1,8 +1,6 @@
 #include "Server.hpp"
 #include "Client.hpp"
 
-#include <cerrno>
-#include <cstring>
 #include <iostream>
 #include <arpa/inet.h>
 #include <fcntl.h>
@@ -38,15 +36,7 @@ int Server::acceptConnection(struct sockaddr_in& addr)
 
 bool Server::isAcceptSuccessful(int client_fd)
 {
-	bool unrecoverableError = (errno != EAGAIN && errno != EWOULDBLOCK);
-
-	if (client_fd >= 0)
-		return true;
-
-	if (unrecoverableError)
-		std::cerr << "accept: " << std::strerror(errno) << std::endl;
-
-	return false;
+	return client_fd >= 0;
 }
 
 bool Server::setNonBlocking(int fd)

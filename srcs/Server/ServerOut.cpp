@@ -1,7 +1,6 @@
 #include "Server.hpp"
 #include "Client.hpp"
 
-#include <cerrno>
 #include <sys/socket.h>
 
 static int FLAGS_NONE = 0;
@@ -56,9 +55,7 @@ bool Server::isSendSuccessful(ssize_t bytesSent, int fd)
 
 	if (sendError)
 	{
-		bool unrecoverableError = (errno != EAGAIN && errno != EWOULDBLOCK);
-		if (unrecoverableError)
-			addToDisconnectList(fd);
+		addToDisconnectList(fd);
 		return false;
 	}
 	if (nothingSent)
