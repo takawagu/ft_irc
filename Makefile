@@ -7,10 +7,46 @@ INC_DIR = includes
 SRCS_DIR = srcs
 OBJ_DIR = obj
 
-INC_DIRS = $(shell find $(INC_DIR) -type d)
+INC_DIRS = \
+includes \
+includes/command \
+
 INCLUDES = $(addprefix -I,$(INC_DIRS))
 
-SRCS = $(shell find $(SRCS_DIR) -name '*.cpp')
+SRCS := \
+srcs/Channel/Channel.cpp \
+srcs/Channel/ChannelMember.cpp \
+srcs/Channel/ChannelMode.cpp \
+srcs/Client.cpp \
+srcs/Command/ACommand.cpp \
+srcs/Command/Cap.cpp \
+srcs/Command/CommandUtils.cpp \
+srcs/Command/Invite.cpp \
+srcs/Command/Join.cpp \
+srcs/Command/Kick.cpp \
+srcs/Command/Mode.cpp \
+srcs/Command/Nick.cpp \
+srcs/Command/Part.cpp \
+srcs/Command/Pass.cpp \
+srcs/Command/Privmsg.cpp \
+srcs/Command/Quit.cpp \
+srcs/Command/Topic.cpp \
+srcs/Command/User.cpp \
+srcs/Config.cpp \
+srcs/Server/Server.cpp \
+srcs/Server/ServerAccept.cpp \
+srcs/Server/ServerChannel.cpp \
+srcs/Server/ServerClient.cpp \
+srcs/Server/ServerCommand.cpp \
+srcs/Server/ServerIn.cpp \
+srcs/Server/ServerLoop.cpp \
+srcs/Server/ServerOut.cpp \
+srcs/Server/ServerSetup.cpp \
+srcs/Server/ServerShutdown.cpp \
+srcs/Server/ServerUtils.cpp \
+srcs/commandTest.cpp \
+srcs/main.cpp \
+
 OBJS = $(SRCS:$(SRCS_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 
 all: $(NAME)
