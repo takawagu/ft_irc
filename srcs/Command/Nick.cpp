@@ -4,6 +4,11 @@
 
 void Nick::executeAction(Server& server, Client& client, int fd)
 {
+	if (!client.isPassAccepted())
+	{
+		server.sendError(client, fd, "464", ":Password required");
+		return;
+	}
 	if (params().empty())
 	{
 		server.sendError(client, fd, "431", ":No nickname given");
