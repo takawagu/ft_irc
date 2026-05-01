@@ -125,13 +125,19 @@ Mode::ModeResult Mode::dispatchMode(Server& server, Client& client, int fd, Chan
 
 Mode::ModeResult Mode::applyModeI(Channel* channel, ModeContext& ctx)
 {
-	channel->setInviteOnly(ctx.inputSign == '+');
+	bool newValue = (ctx.inputSign == '+');
+	if (channel->isInviteOnly() == newValue)
+		return MODE_SKIP;
+	channel->setInviteOnly(newValue);
 	return MODE_APPLIED;
 }
 
 Mode::ModeResult Mode::applyModeT(Channel* channel, ModeContext& ctx)
 {
-	channel->setTopicRestricted(ctx.inputSign == '+');
+	bool newValue = (ctx.inputSign == '+');
+	if (channel->isTopicRestricted() == newValue)
+		return MODE_SKIP;
+	channel->setTopicRestricted(newValue);
 	return MODE_APPLIED;
 }
 
@@ -145,6 +151,11 @@ Mode::ModeResult Mode::applyModeK(Server& server, Client& client, int fd, Channe
 			server.sendError(client, fd, "461", "MODE :Not enough parameters");
 			return MODE_STOP;
 		}
+		if (ctx.modeParams[ctx.paramIndex].empty() || channel->key() == ctx.modeParams[ctx.paramIndex])
+		{
+			ctx.paramIndex++;
+			return MODE_SKIP;
+		}
 		channel->setKey(ctx.modeParams[ctx.paramIndex]);
 		if (!ctx.broadcast.replyParams.empty())
 			ctx.broadcast.replyParams += " ";
@@ -153,6 +164,14 @@ Mode::ModeResult Mode::applyModeK(Server& server, Client& client, int fd, Channe
 	}
 	else
 	{
+		if (channel->key().empty())
+		{
+			if (ctx.paramIndex < ctx.modeParams.size())
+				ctx.paramIndex++;
+			return MODE_SKIP;
+		}
+		if (ctx.paramIndex < ctx.modeParams.size())
+			ctx.paramIndex++;
 		channel->setKey("");
 		if (!ctx.broadcast.replyParams.empty())
 			ctx.broadcast.replyParams += " ";
@@ -166,6 +185,8 @@ Mode::ModeResult Mode::applyModeL(Server& server, Client& client, int fd, Channe
 {
 	if (ctx.inputSign == '-')
 	{
+		if (channel->userLimit() == 0)
+			return MODE_SKIP;
 		channel->setUserLimit(0);
 		return MODE_APPLIED;
 	}
@@ -176,7 +197,7 @@ Mode::ModeResult Mode::applyModeL(Server& server, Client& client, int fd, Channe
 	}
 	std::size_t limit = toSizeT(ctx.modeParams[ctx.paramIndex]);
 	ctx.paramIndex++;
-	if (limit == 0)
+	if (limit == 0 || limit == channel->userLimit())
 		return MODE_SKIP;
 	channel->setUserLimit(limit);
 	std::ostringstream oss;
@@ -208,7 +229,13 @@ Mode::ModeResult Mode::applyModeO(Server& server, Client& client, int fd, Channe
 		ctx.paramIndex++;
 		return MODE_SKIP;
 	}
-	channel->setOperator(target, ctx.inputSign == '+');
+	bool newOpStatus = (ctx.inputSign == '+');
+	if (channel->isOperator(target) == newOpStatus)
+	{
+		ctx.paramIndex++;
+		return MODE_SKIP;
+	}
+	channel->setOperator(target, newOpStatus);
 	if (!ctx.broadcast.replyParams.empty())
 		ctx.broadcast.replyParams += " ";
 	ctx.broadcast.replyParams += ctx.modeParams[ctx.paramIndex];
