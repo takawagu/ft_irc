@@ -17,6 +17,7 @@ void Pass::executeAction(Server& server, Client& client, int fd)
 	if (!server.checkPassword(params()[0]))
 	{
 		server.sendError(client, fd, "464", " :Password incorrect");
+		server.addToDisconnectList(fd);
 		return;
 	}
 	client.setPassAccepted();

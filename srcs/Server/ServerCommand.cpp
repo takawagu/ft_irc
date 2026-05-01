@@ -25,6 +25,7 @@ void Server::initCommandMap()
 	_cmd_map["MODE"]    = new Mode();
 	_cmd_map["QUIT"]    = new Quit();
 	_cmd_map["PART"]    = new Part();
+	_cmd_map["PING"]    = new Ping();
 }
 
 void Server::handleCommand(Client& client, int fd, const std::string& command, const std::vector<std::string>& params)
@@ -34,7 +35,10 @@ void Server::handleCommand(Client& client, int fd, const std::string& command, c
 		return;
 
 	if (!client.isRegistered() && !isAllowedBeforeRegistration(command))
+	{
+		sendError(client, fd, "451", command + " :You have not registered");
 		return;
+	}
 
 	cmd->execute(*this, client, fd, params);
 }
