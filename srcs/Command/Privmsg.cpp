@@ -8,7 +8,6 @@
 static void sendForChannel(Server& server, Client& client, int fd, const std::string& channel_name, std::string message);
 static void sendForTarget(Server& server, Client& client, int fd, const std::string& target, std::string message);
 
-//    Parameters: <receiver>{,<receiver>} <text to be sent>
 void Privmsg::executeAction(Server& server, Client& client, int fd)
 {
 	if (!paramsErrorCheck(server, client, fd))
