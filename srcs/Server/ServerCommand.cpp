@@ -93,7 +93,6 @@ static std::string extractCommand(const std::string& line, std::string::size_typ
 	return command;
 }
 
-// IRC RFC 準拠: ':' で始まるトークンはそれ以降を trailing として1つのパラメータにまとめる
 static void parseParams(const std::string& line, std::string::size_type pos, std::vector<std::string>& params)
 {
 	while (pos < line.size())

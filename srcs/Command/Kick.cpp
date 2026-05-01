@@ -5,9 +5,6 @@
 
 void Kick::executeAction(Server& server, Client& client, int fd)
 {
-	(void)server;
-	(void)client;
-	(void)fd;
 	if (params().size() < 2)
 	{
 		server.sendError(client, fd, "461", "KICK :Not enough parameters");
@@ -17,26 +14,26 @@ void Kick::executeAction(Server& server, Client& client, int fd)
 	if (channel == NULL)
 	{
 		server.sendError(client, fd, "403", params()[0] + " :No such channel");
-		return;	
+		return;
 	}
 	Client* targetClient = server.findClientByNick(params()[1]);
 	if (targetClient == NULL)
 	{
 		server.sendError(client, fd, "401", params()[1] + " :No such nick/channel");
-		return;	
+		return;
 	}
 	if (!channel->hasMember(&client))
 	{
 		server.sendError(client, fd, "442", params()[0] + " :You're not on that channel");
-		return;	
+		return;
 	}
 	if (!channel->isOperator(&client))
 	{
 		server.sendError(client, fd, "482", params()[0] + " :You're not channel operator");
-		return;	
+		return;
 	}
 	if (!channel->hasMember(targetClient))
-	{		
+	{
 		server.sendError(client, fd, "441", params()[1] + " " + params()[0] + " :They aren't on that channel");
 		return;
 	}
