@@ -28,5 +28,6 @@ void Part::executeAction(Server& server, Client& client, int fd)
 		partMsg = ":" + client.prefix() + " PART " + channel->name() + " " + params()[1]+ "\r\n";
 	server.broadcastToChannel(channel, partMsg);
 	channel->removeMember(&client);
+	client.leaveChannel(channel->name());
 	server.deleteChannelIfEmpty(channel->name());
 }

@@ -49,5 +49,6 @@ void Kick::executeAction(Server& server, Client& client, int fd)
 	}
 	server.broadcastToChannel(channel, kickMsg);
 	channel->removeMember(targetClient);
+	targetClient->leaveChannel(channel->name());
 	server.deleteChannelIfEmpty(channel->name());
 }
