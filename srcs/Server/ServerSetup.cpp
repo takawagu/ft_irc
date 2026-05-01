@@ -1,7 +1,5 @@
 #include "Server.hpp"
 
-#include <cerrno>
-#include <cstring>
 #include <iostream>
 #include <stdexcept>
 #include <arpa/inet.h>
@@ -35,10 +33,7 @@ void Server::setup()
 static int checkSyscall(int ret, const char* name)
 {
 	if (ret < 0)
-	{
-		int saved_errno = errno;
-		throw std::runtime_error(std::string(name) + ": " + std::strerror(saved_errno));
-	}
+		throw std::runtime_error(std::string(name) + " failed");
 	return ret;
 }
 

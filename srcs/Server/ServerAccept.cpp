@@ -43,7 +43,7 @@ bool Server::setNonBlocking(int fd)
 {
 	if (fcntl(fd, F_SETFL, O_NONBLOCK) < 0)
 	{
-		std::cerr << "fcntl: " << std::strerror(errno) << std::endl;
+		std::cerr << "fcntl: failed to set non-blocking" << std::endl;
 		return false;
 	}
 	return true;
