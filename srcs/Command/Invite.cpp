@@ -10,31 +10,31 @@ void Invite::executeAction(Server& server, Client& client, int fd)
 		server.sendError(client, fd, "461", "INVITE :Not enough parameters");
 		return;
 	}
-	Client* targetClient = server.findClientByNick(params()[1]);
+	Client* targetClient = server.findClientByNick(params()[0]);
 	if (targetClient == NULL)
 	{
-		server.sendError(client, fd, "401", params()[1] + " :No such nick/channel");
+		server.sendError(client, fd, "401", params()[0] + " :No such nick/channel");
 		return;
 	}
-	Channel* channel = server.findChannel(params()[0]);
+	Channel* channel = server.findChannel(params()[1]);
 	if (channel == NULL)
 	{
-		server.sendError(client, fd, "403", params()[0] + " :No such channel");
+		server.sendError(client, fd, "403", params()[1] + " :No such channel");
 		return;
 	}
 	if (!channel->hasMember(&client))
 	{
-		server.sendError(client, fd, "442", params()[0] + " :You're not on that channel");
+		server.sendError(client, fd, "442", params()[1] + " :You're not on that channel");
 		return;
 	}
 	if (channel->isInviteOnly() && !channel->isOperator(&client))
 	{
-		server.sendError(client, fd, "482", params()[0] + " :You're not channel operator");
+		server.sendError(client, fd, "482", params()[1] + " :You're not channel operator");
 		return;
 	}
 	if (channel->hasMember(targetClient))
 	{
-		server.sendError(client, fd, "443", params()[1] + " " + params()[0] + " :User is already on that channel");
+		server.sendError(client, fd, "443", params()[0] + " " + params()[1] + " :User is already on that channel");
 		return;
 	}
 	channel->addInvite(targetClient);
