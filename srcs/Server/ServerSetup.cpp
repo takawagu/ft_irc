@@ -1,5 +1,6 @@
 #include "Server.hpp"
 
+#include <cstring>
 #include <iostream>
 #include <stdexcept>
 #include <arpa/inet.h>
