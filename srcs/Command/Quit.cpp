@@ -20,7 +20,7 @@ void Quit::executeAction(Server& server, Client& client, int fd)
 	{
 		Channel* channel = server.findChannel(*it);
 		if (channel)
-			channel->broadcast(quitMsg, &client);
+			server.broadcastToChannel(channel, quitMsg, &client);
 	}
 
 	server.addToDisconnectList(fd);
