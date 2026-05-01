@@ -26,8 +26,22 @@ void Nick::executeAction(Server& server, Client& client, int fd)
 	}
 	std::string old_nick = client.nickname();
 	client.setNickname(params()[0]);
-	client.appendToSendBuffer(":" + old_nick + " NICK " + client.nickname() + "\r\n");
-	server.setPollout(fd, true);
+	std::string nick_msg = ":" + old_nick + " NICK " + client.nickname() + "\r\n";
+	const std::set<std::string>& channels = client.joinedChannels();
+	if (channels.empty())
+	{
+		client.appendToSendBuffer(nick_msg);
+		server.setPollout(fd, true);
+	}
+	else
+	{
+		for (std::set<std::string>::const_iterator it = channels.begin(); it != channels.end(); ++it)
+		{
+			Channel* channel = server.findChannel(*it);
+			if (channel)
+				server.broadcastToChannel(channel, nick_msg, NULL);
+		}
+	}
 	if (client.tryRegister())
 		server.sendWelcomeMessage(client, fd);
 }
