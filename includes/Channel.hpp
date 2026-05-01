@@ -60,8 +60,6 @@ class Channel
 		std::size_t			userLimit() const;
 		void				setUserLimit(std::size_t limit);
 
-		void				broadcast(const std::string& msg, Client* exclude = NULL);
-
 	private:
 		std::string				_name;
 		Topic					_topic;

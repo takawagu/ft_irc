@@ -30,6 +30,7 @@ void Topic::executeAction(Server& server, Client& client, int fd)
 		else
 			topicReply = ":ircserv 331 " + client.nickname() + " " + channel->name() + " :No topic is set\r\n";
 		client.appendToSendBuffer(topicReply);
+		server.setPollout(fd, true);
 		return;
 	}
 	else
@@ -39,9 +40,12 @@ void Topic::executeAction(Server& server, Client& client, int fd)
 			server.sendError(client, fd, "482", params()[0] + " :You're not channel operator");
 			return;
 		}
-		channel->setTopic(params()[1].substr(1), client.nickname());
+		std::string topic = params()[1];
+		if (!topic.empty() && topic[0] == ':')
+			topic = topic.substr(1);
+		channel->setTopic(topic, client.nickname());
 		std::string topicChangeMsg = ":" + client.prefix() + " TOPIC " + channel->name() + " :" + channel->topic() + "\r\n";
-		channel->broadcast(topicChangeMsg);
+		server.broadcastToChannel(channel, topicChangeMsg);
 	}
 	return;
 }

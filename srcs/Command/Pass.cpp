@@ -14,7 +14,10 @@ void Pass::executeAction(Server& server, Client& client, int fd)
 		server.sendError(client, fd, "461", "PASS :Not enough parameters");
 		return;
 	}
-	if (!server.checkPassword(params()[0]))
+	std::string pass = params()[0];
+	if (!pass.empty() && pass[0] == ':')
+		pass = pass.substr(1);
+	if (!server.checkPassword(pass))
 	{
 		server.sendError(client, fd, "464", " :Password incorrect");
 		server.addToDisconnectList(fd);

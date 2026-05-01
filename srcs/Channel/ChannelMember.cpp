@@ -41,11 +41,3 @@ const std::map<Client*, bool>& Channel::members() const
 	return _members;
 }
 
-void Channel::broadcast(const std::string& msg, Client* exclude)
-{
-	for (std::map<Client*, bool>::iterator it = _members.begin(); it != _members.end(); ++it)
-	{
-		if (it->first != exclude)
-			it->first->appendToSendBuffer(msg);
-	}
-}
