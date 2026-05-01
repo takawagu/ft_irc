@@ -46,6 +46,8 @@ void Server::removeClient(int fd)
 		}
 	}
 
+	if (client->hasDataToSend())
+		send(fd, client->sendBuffer().data(), client->sendBuffer().size(), 0);
 	close(fd);
 	delete client;
 	_clients.erase(it);

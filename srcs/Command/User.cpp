@@ -4,6 +4,11 @@
 
 void User::executeAction(Server& server, Client& client, int fd)
 {
+	if (!client.isPassAccepted())
+	{
+		server.sendError(client, fd, "464", ":Password required");
+		return;
+	}
 	if (params().size() < 4)
 	{
 		server.sendError(client, fd, "461", "USER :Not enough parameters");

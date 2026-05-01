@@ -21,11 +21,6 @@ bool Server::isNicknameTaken(const std::string& nick) const
     for (std::map<int, Client*>::const_iterator it = _clients.begin(); it != _clients.end(); ++it)
     {
         const std::string& existing = it->second->nickname();
-
-        // std::cout << "[DEBUG] comparing '" 
-        //           << existing << "' with '" 
-        //           << nick << "'" << std::endl;
-
         if (!existing.empty() && toScandanavianLower(existing) == new_nick)
             return true;
     }

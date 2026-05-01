@@ -4,6 +4,11 @@
 
 void Nick::executeAction(Server& server, Client& client, int fd)
 {
+	if (!client.isPassAccepted())
+	{
+		server.sendError(client, fd, "464", ":Password required");
+		return;
+	}
 	if (params().empty())
 	{
 		server.sendError(client, fd, "431", ":No nickname given");
@@ -48,12 +53,3 @@ static bool isNicknameSymbol(char c)
 	return c == '-' || c == '[' || c == ']' || c == '\\' || c == '`' || c == '^' || c == '{' || c == '}' ;
 }
 
-// 最大9文字(MAX_NICKNAME_LENGTH)
-// 先頭は英字
-// 以降は英数字 + 一部記号
-// スペースは禁止
-// 大文字小文字は特殊ルールあり（{ = [ など）
-// ネットワーク内でユニーク必須
-
-//   <nick>       ::= <letter> { <letter> | <number> | <special> }
-//    <special>    ::= '-' | '[' | ']' | '\' | '`' | '^' | '{' | '}'
