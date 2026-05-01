@@ -28,6 +28,7 @@ srcs/Command/Mode.cpp \
 srcs/Command/Nick.cpp \
 srcs/Command/Part.cpp \
 srcs/Command/Pass.cpp \
+srcs/Command/Ping.cpp \
 srcs/Command/Privmsg.cpp \
 srcs/Command/Quit.cpp \
 srcs/Command/Topic.cpp \

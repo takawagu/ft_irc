@@ -13,5 +13,6 @@
 #include "Quit.hpp"
 #include "Part.hpp"
 #include "Cap.hpp"
+#include "Ping.hpp"
 
 #endif
