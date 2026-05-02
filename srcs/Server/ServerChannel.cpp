@@ -29,8 +29,8 @@ void Server::deleteChannelIfEmpty(const std::string& name)
 
 	if (channel->memberCount() == 0)
 	{
-		delete channel;
 		_channels.erase(name);
+		delete channel;
 	}
 }
 
