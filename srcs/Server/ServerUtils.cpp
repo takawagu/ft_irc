@@ -40,3 +40,17 @@ std::string Server::toScandanavianLower(const std::string& nick) const
     }
     return new_nick;
 }
+
+std::string Server::toScandanavianUpper(const std::string& str) const
+{
+    std::string result = str;
+    for (size_t i = 0; i < result.length(); i++)
+    {
+        if (result[i] == '[')
+            result[i] = '{';
+        else if (result[i] == ']')
+            result[i] = '}';
+        result[i] = toupper((unsigned char)result[i]);
+    }
+    return result;
+}

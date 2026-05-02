@@ -72,6 +72,7 @@ bool Server::parseRequest(const std::string& line, std::string& command, std::ve
 	command = extractCommand(line, pos);
 	if (command.empty())
 		return false;
+	command = toScandanavianUpper(command);
 
 	params.clear();
 	parseParams(line, pos, params);

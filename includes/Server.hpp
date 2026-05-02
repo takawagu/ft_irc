@@ -39,6 +39,7 @@ class Server
 		bool checkPassword(const std::string& pass) const;
 		bool isNicknameTaken(const std::string& nick) const;
 		std::string toScandanavianLower(const std::string& nick) const;
+		std::string toScandanavianUpper(const std::string& str) const;
 		void addClient(int fd, Client* client);
 
 	private:
